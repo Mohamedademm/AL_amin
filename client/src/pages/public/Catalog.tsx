@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import api from '../../api/axios';
-
+import api from '../../services/axios';
 import Navbar from '../../components/layout/Navbar';
 import { ShoppingCart, Search } from 'lucide-react';
 
