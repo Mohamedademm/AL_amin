@@ -12,9 +12,9 @@ module.exports = {
         'cyber-text': '#EBEBEB',
       },
       fontFamily: {
-        serif: ['Newsreader', 'serif'],
-        sans: ['Inter', 'sans-serif'],
-        mono: ['Space Grotesk', 'monospace'],
+        newsreader: ['Newsreader', 'serif'],
+        inter: ['Inter', 'sans-serif'],
+        'space-grotesk': ['Space Grotesk', 'monospace'],
       },
     },
   },
