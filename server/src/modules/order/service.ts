@@ -94,17 +94,34 @@ export const OrderService = {
   },
 
   // Advance an order through the state machine, rejecting illegal jumps.
+  // Accepting an order atomically decrements boutique stock (and fails if a
+  // line can no longer be fulfilled).
   async updateStatus(id: string, next: OrderStatus) {
-    const order = await prisma.order.findUnique({ where: { id } });
+    const order = await prisma.order.findUnique({ where: { id }, include: { items: true } });
     if (!order) throw new AppError('Order not found', 404);
 
     if (!TRANSITIONS[order.status].includes(next)) {
       throw new AppError(`Cannot move order from ${order.status} to ${next}`, 400);
     }
 
-    return prisma.order.update({
+    if (next === 'ACCEPTED') {
+      await prisma.$transaction(async (tx) => {
+        for (const item of order.items) {
+          const key = { productId_spotId: { productId: item.productId, spotId: order.spotId } };
+          const stock = await tx.inventory.findUnique({ where: key });
+          if (!stock || stock.quantity < item.quantity) {
+            throw new AppError('Insufficient stock at the boutique to accept this order', 400);
+          }
+          await tx.inventory.update({ where: key, data: { quantity: { decrement: item.quantity } } });
+        }
+        await tx.order.update({ where: { id }, data: { status: next } });
+      });
+    } else {
+      await prisma.order.update({ where: { id }, data: { status: next } });
+    }
+
+    return prisma.order.findUnique({
       where: { id },
-      data: { status: next },
       include: { items: { include: { product: true } }, spot: true },
     });
   },

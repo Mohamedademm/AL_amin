@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import morgan from 'morgan';
+import rateLimit from 'express-rate-limit';
 import { ENV } from './config/env';
 import { errorHandler, AppError } from './middleware/errorHandler';
 
@@ -17,10 +19,33 @@ import auditRoutes from './modules/audit/routes';
 
 const app = express();
 
-// Middleware
-app.use(cors());
+// Security headers.
+app.use(helmet());
+
+// Restrict cross-origin requests to the configured client (allow no-origin
+// tools like curl / server-to-server).
+const allowedOrigins = [ENV.CLIENT_URL];
+app.use(
+  cors({
+    origin: (origin, cb) =>
+      !origin || allowedOrigins.includes(origin)
+        ? cb(null, true)
+        : cb(new Error('Not allowed by CORS')),
+    credentials: true,
+  }),
+);
+
 app.use(morgan('dev'));
-app.use(express.json());
+app.use(express.json({ limit: '1mb' })); // cap request body size
+
+// Throttle authentication endpoints to slow down brute-force attempts.
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { status: 'error', message: 'Too many attempts, please try again later.' },
+});
 
 // Health Check
 app.get('/health', (req, res) => {
@@ -28,7 +53,7 @@ app.get('/health', (req, res) => {
 });
 
 // API Routes
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/orders', orderRoutes);

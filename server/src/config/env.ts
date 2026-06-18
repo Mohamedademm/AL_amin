@@ -11,6 +11,8 @@ export const ENV = {
   DATABASE_URL: process.env.DATABASE_URL as string,
   JWT_SECRET: process.env.JWT_SECRET || 'your_default_secret_change_this_in_production',
   NODE_ENV: process.env.NODE_ENV || 'development',
+  // Allowed browser origin for CORS (the Vite client).
+  CLIENT_URL: process.env.CLIENT_URL || 'http://localhost:5173',
 };
 
 // Validate critical environment variables

@@ -5,6 +5,8 @@ import { userApi } from '../../services/api';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Badge } from '../../components/ui/Badge';
 import { PageLoader } from '../../components/ui/Spinner';
+import { useConfirm } from '../../context/ConfirmContext';
+import { useToast } from '../../context/ToastContext';
 import { cn } from '../../lib/cn';
 import { formatDate, initials } from '../../utils/format';
 import type { Role, User } from '../../types';
@@ -14,17 +16,28 @@ const allRoles: Role[] = ['ADMIN', 'MANAGER', 'WORKER', 'CLIENT'];
 
 export default function UserManagement() {
   const qc = useQueryClient();
+  const confirm = useConfirm();
+  const toast = useToast();
   const [filter, setFilter] = useState<Role | 'ALL'>('ALL');
   const { data: users, isLoading } = useQuery({ queryKey: ['users'], queryFn: () => userApi.list() });
 
   const update = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<User> }) => userApi.update(id, data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['users'] }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['users'] }); toast.success('User updated'); },
+    onError: () => toast.error('Could not update the user'),
   });
   const remove = useMutation({
     mutationFn: (id: string) => userApi.remove(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['users'] }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['users'] }); toast.success('User deleted'); },
+    onError: () => toast.error('Could not delete the user'),
   });
+
+  // Confirm before permanently deleting a user account.
+  const askDelete = async (u: User) => {
+    if (await confirm({ title: 'Delete user', message: `Delete ${u.firstName} ${u.lastName}? This cannot be undone.`, danger: true, confirmLabel: 'Delete' })) {
+      remove.mutate(u.id);
+    }
+  };
 
   if (isLoading) return <PageLoader label="Loading users" />;
 
@@ -86,7 +99,7 @@ export default function UserManagement() {
                   </td>
                   <td className="px-5 py-3 text-muted">{u.createdAt ? formatDate(u.createdAt) : '—'}</td>
                   <td className="px-5 py-3 text-right">
-                    <button onClick={() => confirm(`Delete ${u.firstName}?`) && remove.mutate(u.id)} className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-surface-2 text-muted hover:text-red-500" aria-label="Delete"><Trash2 size={15} /></button>
+                    <button onClick={() => askDelete(u)} className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-surface-2 text-muted hover:text-red-500" aria-label="Delete"><Trash2 size={15} /></button>
                   </td>
                 </tr>
               ))}

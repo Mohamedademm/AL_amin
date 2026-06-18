@@ -8,6 +8,8 @@ import { Input } from '../../components/ui/Input';
 import { Modal } from '../../components/ui/Modal';
 import { PageLoader } from '../../components/ui/Spinner';
 import { ProductImage } from '../../components/common/ProductImage';
+import { useConfirm } from '../../context/ConfirmContext';
+import { useToast } from '../../context/ToastContext';
 import { formatPrice } from '../../utils/format';
 import type { Product } from '../../types';
 
@@ -24,6 +26,8 @@ const EMPTY: FormState = { name: '', description: '', price: '', categoryId: '',
 
 export default function ProductManagement() {
   const qc = useQueryClient();
+  const confirm = useConfirm();
+  const toast = useToast();
   const { data: products, isLoading } = useQuery({ queryKey: ['products'], queryFn: productApi.list });
   const { data: categories } = useQuery({ queryKey: ['categories'], queryFn: categoryApi.list });
 
@@ -37,10 +41,22 @@ export default function ProductManagement() {
       const payload = { name: f.name, description: f.description, price: Number(f.price), categoryId: f.categoryId, imageUrl: f.imageUrl || undefined };
       return f.id ? productApi.update(f.id, payload) : productApi.create(payload);
     },
-    onSuccess: () => { invalidate(); setOpen(false); },
+    onSuccess: () => { invalidate(); setOpen(false); toast.success('Product saved'); },
+    onError: () => toast.error('Could not save the product'),
   });
 
-  const remove = useMutation({ mutationFn: (id: string) => productApi.remove(id), onSuccess: invalidate });
+  const remove = useMutation({
+    mutationFn: (id: string) => productApi.remove(id),
+    onSuccess: () => { invalidate(); toast.success('Product deleted'); },
+    onError: () => toast.error('Could not delete the product'),
+  });
+
+  // Ask for confirmation before deleting a product.
+  const askDelete = async (p: Product) => {
+    if (await confirm({ title: 'Delete product', message: `Delete "${p.name}"? This cannot be undone.`, danger: true, confirmLabel: 'Delete' })) {
+      remove.mutate(p.id);
+    }
+  };
 
   const openCreate = () => { setForm({ ...EMPTY, categoryId: categories?.[0]?.id ?? '' }); setOpen(true); };
   const openEdit = (p: Product) => {
@@ -85,7 +101,7 @@ export default function ProductManagement() {
                   <td className="px-5 py-3">
                     <div className="flex justify-end gap-2">
                       <button onClick={() => openEdit(p)} className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-surface-2 text-muted hover:text-primary" aria-label="Edit"><Pencil size={15} /></button>
-                      <button onClick={() => confirm(`Delete "${p.name}"?`) && remove.mutate(p.id)} className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-surface-2 text-muted hover:text-red-500" aria-label="Delete"><Trash2 size={15} /></button>
+                      <button onClick={() => askDelete(p)} className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-surface-2 text-muted hover:text-red-500" aria-label="Delete"><Trash2 size={15} /></button>
                     </div>
                   </td>
                 </tr>

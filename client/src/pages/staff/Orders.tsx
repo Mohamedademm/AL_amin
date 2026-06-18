@@ -6,6 +6,7 @@ import { PageHeader } from '../../components/ui/PageHeader';
 import { StatusBadge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { PageLoader } from '../../components/ui/Spinner';
+import { useToast } from '../../context/ToastContext';
 import { cn } from '../../lib/cn';
 import { formatDateTime, formatPrice } from '../../utils/format';
 import type { Order, OrderStatus } from '../../types';
@@ -14,15 +15,19 @@ const filters: (OrderStatus | 'ALL')[] = ['ALL', 'PENDING', 'VERIFYING', 'ACCEPT
 
 export default function StaffOrders() {
   const qc = useQueryClient();
+  const toast = useToast();
   const { data: orders, isLoading } = useQuery({ queryKey: ['orders'], queryFn: orderApi.list });
   const [filter, setFilter] = useState<OrderStatus | 'ALL'>('ALL');
 
   const mutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: OrderStatus }) => orderApi.updateStatus(id, status),
-    onSuccess: () => {
+    onSuccess: (_data, vars) => {
       qc.invalidateQueries({ queryKey: ['orders'] });
       qc.invalidateQueries({ queryKey: ['dashboard'] });
+      qc.invalidateQueries({ queryKey: ['inventory'] });
+      toast.success(`Order moved to ${vars.status}`);
     },
+    onError: (e: any) => toast.error(e?.response?.data?.message || 'Could not update the order'),
   });
 
   if (isLoading) return <PageLoader label="Loading orders" />;

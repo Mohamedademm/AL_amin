@@ -7,14 +7,18 @@ import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { PageLoader } from '../../components/ui/Spinner';
+import { useConfirm } from '../../context/ConfirmContext';
+import { useToast } from '../../context/ToastContext';
 import { cn } from '../../lib/cn';
 import { formatDateTime } from '../../utils/format';
-import type { DiscountScope } from '../../types';
+import type { Discount, DiscountScope } from '../../types';
 
 const EMPTY = { scope: 'CATEGORY' as DiscountScope, targetId: '', percentage: '', endsAt: '', maxQuantity: '' };
 
 export default function Pricing() {
   const qc = useQueryClient();
+  const confirm = useConfirm();
+  const toast = useToast();
   const { data: discounts, isLoading } = useQuery({ queryKey: ['discounts'], queryFn: discountApi.list });
   const { data: categories } = useQuery({ queryKey: ['categories'], queryFn: categoryApi.list });
   const { data: products } = useQuery({ queryKey: ['products'], queryFn: productApi.list });
@@ -38,11 +42,18 @@ export default function Pricing() {
         endsAt: form.endsAt ? new Date(form.endsAt).toISOString() : undefined,
         maxQuantity: form.maxQuantity ? Number(form.maxQuantity) : undefined,
       }),
-    onSuccess: () => { invalidate(); setForm(EMPTY); },
+    onSuccess: () => { invalidate(); setForm(EMPTY); toast.success('Discount applied'); },
     onError: (e: any) => setError(e?.response?.data?.message || 'Could not create the discount.'),
   });
-  const toggle = useMutation({ mutationFn: ({ id, active }: { id: string; active: boolean }) => discountApi.setActive(id, active), onSuccess: invalidate });
-  const remove = useMutation({ mutationFn: (id: string) => discountApi.remove(id), onSuccess: invalidate });
+  const toggle = useMutation({ mutationFn: ({ id, active }: { id: string; active: boolean }) => discountApi.setActive(id, active), onSuccess: () => { invalidate(); toast.success('Discount updated'); } });
+  const remove = useMutation({ mutationFn: (id: string) => discountApi.remove(id), onSuccess: () => { invalidate(); toast.success('Discount removed'); } });
+
+  // Confirm before removing a pricing rule.
+  const askRemove = async (d: Discount) => {
+    if (await confirm({ title: 'Remove discount', message: `Remove the −${d.percentage}% rule on ${d.category?.name || d.product?.name}?`, danger: true, confirmLabel: 'Remove' })) {
+      remove.mutate(d.id);
+    }
+  };
 
   if (isLoading) return <PageLoader label="Loading pricing" />;
 
@@ -114,7 +125,7 @@ export default function Pricing() {
                 <div className="flex items-center gap-2">
                   <Badge tone={d.active ? 'emerald' : 'neutral'}>{d.active ? 'Active' : 'Paused'}</Badge>
                   <button onClick={() => toggle.mutate({ id: d.id, active: !d.active })} className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-surface-2 text-muted hover:text-primary" aria-label="Toggle"><Power size={15} /></button>
-                  <button onClick={() => confirm('Remove this discount?') && remove.mutate(d.id)} className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-surface-2 text-muted hover:text-red-500" aria-label="Delete"><Trash2 size={15} /></button>
+                  <button onClick={() => askRemove(d)} className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-surface-2 text-muted hover:text-red-500" aria-label="Delete"><Trash2 size={15} /></button>
                 </div>
               </div>
               {(d.endsAt || d.maxQuantity) && (

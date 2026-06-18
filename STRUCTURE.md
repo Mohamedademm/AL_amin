@@ -13,7 +13,7 @@ directories are added, removed, or moved.
       - `ui/`: Design-system primitives (Button, Card, Input, Badge, Modal, Spinner, StatCard, PageHeader, Reveal, ThemeToggle)
       - `common/`: Composite pieces (ProductCard, ProductImage)
       - `layout/`: Shells (MainLayout, DashboardLayout, AuthShell, Navbar, Footer; StaffLayout/AdminLayout re-export DashboardLayout)
-    - `context/`: Global providers — `ThemeContext` (light/dark), `AuthContext` (session), `CartContext`
+    - `context/`: Global providers — `ThemeContext` (light/dark), `AuthContext` (session), `CartContext`, `ToastContext` (notifications), `ConfirmContext` (dialog)
     - `hooks/`: Custom hooks (`useInView` for scroll reveals)
     - `lib/`: Tiny utilities (`cn` classnames helper)
     - `pages/`: Route components by area — `public/`, `auth/`, `staff/`, `admin/`
@@ -26,13 +26,14 @@ directories are added, removed, or moved.
 - `server/`: Backend (Node + Express 5 + Prisma 7 + PostgreSQL)
   - `src/`
     - `config/`: Env + Prisma client (`database.ts`)
-    - `lib/`: Cross-cutting logic (`pricing.ts` — discount/effective-price engine)
+    - `lib/`: Cross-cutting logic (`pricing.ts` — discount engine; `validation.ts` — email/password rules)
     - `middleware/`: `auth` (JWT + RBAC), `errorHandler`
     - `modules/`: Domain modules, each with `routes` / `controller` / `service` (`auth`, `product`, `category`, `order`, `inventory`, `spot`, `user`, `dashboard`, `discount`, `audit`)
     - `server.ts`: App entry + route mounting
   - `prisma/`: `schema.prisma`, `migrations/`, `seed.ts`
   - `.env` / `.env.example`
-- `docs/`: Project documentation
+- `docs/`: Project documentation (`PROJECT.md` — full knowledge base, `sprint-1-plan.md`)
 - `docker-compose.yml`: PostgreSQL 16 service (host port 5433)
 - `CLAUDE.md`: Project guidelines
+- `TODO.md`: Prioritized improvement roadmap
 - `STRUCTURE.md`: This map

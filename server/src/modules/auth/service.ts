@@ -5,6 +5,7 @@ import { ENV } from '../../config/env';
 import { AppError } from '../../middleware/errorHandler';
 import { RegisterInput, LoginInput, JwtPayload } from './types';
 import { RoleName, User } from '@prisma/client';
+import { assertEmail, assertPasswordStrength } from '../../lib/validation';
 
 // Number of bcrypt salt rounds — 10 is the standard cost/perf trade-off.
 const SALT_ROUNDS = 10;
@@ -22,6 +23,9 @@ const signToken = (payload: JwtPayload) =>
 export const AuthService = {
   // Create a new CLIENT account, hashing the password and issuing a token.
   async register(data: RegisterInput) {
+    assertEmail(data.email);
+    assertPasswordStrength(data.password);
+
     const existing = await prisma.user.findUnique({ where: { email: data.email } });
     if (existing) throw new AppError('An account with this email already exists', 409);
 

@@ -5,12 +5,14 @@ import { inventoryApi, spotApi } from '../../services/api';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Badge } from '../../components/ui/Badge';
 import { PageLoader } from '../../components/ui/Spinner';
+import { useToast } from '../../context/ToastContext';
 import { cn } from '../../lib/cn';
 
 const LOW = 10;
 
 export default function Inventory() {
   const qc = useQueryClient();
+  const toast = useToast();
   const [spotId, setSpotId] = useState('');
   const { data: spots } = useQuery({ queryKey: ['spots'], queryFn: spotApi.list });
   const { data: inventory, isLoading } = useQuery({
@@ -26,7 +28,9 @@ export default function Inventory() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['inventory'] });
       qc.invalidateQueries({ queryKey: ['dashboard'] });
+      toast.success('Stock updated');
     },
+    onError: () => toast.error('Could not update stock'),
   });
 
   return (

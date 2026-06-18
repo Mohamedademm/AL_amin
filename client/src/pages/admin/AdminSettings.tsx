@@ -5,19 +5,27 @@ import { categoryApi, spotApi } from '../../services/api';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
+import { useConfirm } from '../../context/ConfirmContext';
+import { useToast } from '../../context/ToastContext';
 
 export default function AdminSettings() {
   const qc = useQueryClient();
+  const confirm = useConfirm();
+  const toast = useToast();
   const { data: categories } = useQuery({ queryKey: ['categories'], queryFn: categoryApi.list });
   const { data: spots } = useQuery({ queryKey: ['spots'], queryFn: spotApi.list });
 
   const [catName, setCatName] = useState('');
   const [spot, setSpot] = useState({ name: '', location: '', address: '', phone: '' });
 
-  const addCat = useMutation({ mutationFn: () => categoryApi.create({ name: catName }), onSuccess: () => { qc.invalidateQueries({ queryKey: ['categories'] }); setCatName(''); } });
-  const delCat = useMutation({ mutationFn: (id: string) => categoryApi.remove(id), onSuccess: () => qc.invalidateQueries({ queryKey: ['categories'] }) });
-  const addSpot = useMutation({ mutationFn: () => spotApi.create(spot), onSuccess: () => { qc.invalidateQueries({ queryKey: ['spots'] }); setSpot({ name: '', location: '', address: '', phone: '' }); } });
-  const delSpot = useMutation({ mutationFn: (id: string) => spotApi.remove(id), onSuccess: () => qc.invalidateQueries({ queryKey: ['spots'] }) });
+  const addCat = useMutation({ mutationFn: () => categoryApi.create({ name: catName }), onSuccess: () => { qc.invalidateQueries({ queryKey: ['categories'] }); setCatName(''); toast.success('Category added'); }, onError: () => toast.error('Could not add category') });
+  const delCat = useMutation({ mutationFn: (id: string) => categoryApi.remove(id), onSuccess: () => { qc.invalidateQueries({ queryKey: ['categories'] }); toast.success('Category deleted'); }, onError: () => toast.error('Could not delete — products may still use it') });
+  const addSpot = useMutation({ mutationFn: () => spotApi.create(spot), onSuccess: () => { qc.invalidateQueries({ queryKey: ['spots'] }); setSpot({ name: '', location: '', address: '', phone: '' }); toast.success('Vending spot added'); }, onError: () => toast.error('Could not add spot') });
+  const delSpot = useMutation({ mutationFn: (id: string) => spotApi.remove(id), onSuccess: () => { qc.invalidateQueries({ queryKey: ['spots'] }); toast.success('Vending spot deleted'); }, onError: () => toast.error('Could not delete — spot may have stock or orders') });
+
+  // Confirmation helpers for destructive settings actions.
+  const askDelCat = async (id: string, name: string) => { if (await confirm({ title: 'Delete category', message: `Delete "${name}"?`, danger: true, confirmLabel: 'Delete' })) delCat.mutate(id); };
+  const askDelSpot = async (id: string, name: string) => { if (await confirm({ title: 'Delete vending spot', message: `Delete "${name}"?`, danger: true, confirmLabel: 'Delete' })) delSpot.mutate(id); };
 
   return (
     <div>
@@ -35,7 +43,7 @@ export default function AdminSettings() {
             {categories?.map((c) => (
               <div key={c.id} className="flex items-center justify-between rounded-xl border border-line px-4 py-2.5">
                 <span className="text-sm font-medium">{c.name}</span>
-                <button onClick={() => confirm(`Delete "${c.name}"?`) && delCat.mutate(c.id)} className="text-muted hover:text-red-500" aria-label="Delete"><Trash2 size={15} /></button>
+                <button onClick={() => askDelCat(c.id, c.name)} className="text-muted hover:text-red-500" aria-label="Delete"><Trash2 size={15} /></button>
               </div>
             ))}
           </div>
@@ -58,7 +66,7 @@ export default function AdminSettings() {
                   <p className="text-sm font-medium">{s.name}</p>
                   <p className="text-xs text-muted">{s.location} · {s._count?.inventory ?? 0} items</p>
                 </div>
-                <button onClick={() => confirm(`Delete "${s.name}"?`) && delSpot.mutate(s.id)} className="text-muted hover:text-red-500" aria-label="Delete"><Trash2 size={15} /></button>
+                <button onClick={() => askDelSpot(s.id, s.name)} className="text-muted hover:text-red-500" aria-label="Delete"><Trash2 size={15} /></button>
               </div>
             ))}
           </div>

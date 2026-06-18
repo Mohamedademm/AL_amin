@@ -8,8 +8,10 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Modal } from '../../components/ui/Modal';
 import { PageLoader } from '../../components/ui/Spinner';
+import { useConfirm } from '../../context/ConfirmContext';
+import { useToast } from '../../context/ToastContext';
 import { initials } from '../../utils/format';
-import type { Role } from '../../types';
+import type { Role, User } from '../../types';
 
 const STAFF_ROLES: Role[] = ['ADMIN', 'MANAGER', 'WORKER'];
 const roleTone: Record<string, 'primary' | 'sky' | 'amber'> = { ADMIN: 'primary', MANAGER: 'sky', WORKER: 'amber' };
@@ -18,6 +20,8 @@ const EMPTY = { firstName: '', lastName: '', email: '', phone: '', password: '',
 
 export default function StaffManagement() {
   const qc = useQueryClient();
+  const confirm = useConfirm();
+  const toast = useToast();
   const { data: users, isLoading } = useQuery({ queryKey: ['users'], queryFn: () => userApi.list() });
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(EMPTY);
@@ -25,10 +29,21 @@ export default function StaffManagement() {
 
   const create = useMutation({
     mutationFn: () => userApi.create(form),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['users'] }); setOpen(false); setForm(EMPTY); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['users'] }); setOpen(false); setForm(EMPTY); toast.success('Staff account created'); },
     onError: (e: any) => setError(e?.response?.data?.message || 'Could not create staff account.'),
   });
-  const remove = useMutation({ mutationFn: (id: string) => userApi.remove(id), onSuccess: () => qc.invalidateQueries({ queryKey: ['users'] }) });
+  const remove = useMutation({
+    mutationFn: (id: string) => userApi.remove(id),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['users'] }); toast.success('Staff member removed'); },
+    onError: () => toast.error('Could not remove the staff member'),
+  });
+
+  // Confirm before removing a staff account.
+  const askRemove = async (u: User) => {
+    if (await confirm({ title: 'Remove staff', message: `Remove ${u.firstName} ${u.lastName}?`, danger: true, confirmLabel: 'Remove' })) {
+      remove.mutate(u.id);
+    }
+  };
 
   if (isLoading) return <PageLoader label="Loading staff" />;
 
@@ -47,7 +62,7 @@ export default function StaffManagement() {
           <div key={u.id} className="rounded-2xl border border-line bg-surface p-5">
             <div className="flex items-start justify-between">
               <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/15 text-sm font-bold text-primary">{initials(u.firstName, u.lastName)}</span>
-              <button onClick={() => confirm(`Remove ${u.firstName}?`) && remove.mutate(u.id)} className="text-muted hover:text-red-500" aria-label="Remove"><Trash2 size={16} /></button>
+              <button onClick={() => askRemove(u)} className="text-muted hover:text-red-500" aria-label="Remove"><Trash2 size={16} /></button>
             </div>
             <p className="mt-3 font-semibold text-content">{u.firstName} {u.lastName}</p>
             <p className="text-xs text-muted">{u.email}</p>
