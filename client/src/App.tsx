@@ -1,72 +1,86 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
-import Login from './pages/auth/Login';
+import { CartProvider } from './context/CartContext';
+import ProtectedRoute from './routes/ProtectedRoute';
+
+import MainLayout from './components/layout/MainLayout';
+import DashboardLayout from './components/layout/DashboardLayout';
+
 import Home from './pages/public/Home';
 import Catalog from './pages/public/Catalog';
+import ProductDetail from './pages/public/ProductDetail';
 import Cart from './pages/public/Cart';
-import Profile from './pages/public/Profile';
-import ClientOrders from './pages/public/ClientOrders';
 import Checkout from './pages/public/Checkout';
+import ClientOrders from './pages/public/ClientOrders';
+import Profile from './pages/public/Profile';
+import Login from './pages/auth/Login';
+import Register from './pages/auth/Register';
+import NotFound from './pages/public/NotFound';
+
 import StaffDashboard from './pages/staff/Dashboard';
 import StaffOrders from './pages/staff/Orders';
 import Inventory from './pages/staff/Inventory';
 import ProductManagement from './pages/staff/ProductManagement';
+
 import AdminDashboard from './pages/admin/Dashboard';
 import UserManagement from './pages/admin/UserManagement';
 import StaffManagement from './pages/admin/StaffManagement';
 import AdminSettings from './pages/admin/AdminSettings';
-import ProtectedRoute from './routes/ProtectedRoute';
-import MainLayout from './components/layout/MainLayout';
-import StaffLayout from './components/layout/StaffLayout';
-import AdminLayout from './components/layout/AdminLayout';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { refetchOnWindowFocus: false, retry: 1 } },
+});
 
-function App() {
+const STAFF = ['ADMIN', 'MANAGER', 'WORKER'] as const;
+
+export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Router>
-          <Routes>
-            {/* Public Routes */}
-            <Route element={<MainLayout />}>
-              <Route path="/" element={<Home />} />
-              <Route path="/catalog" element={<Catalog />} />
-              <Route path="/cart" element={<Cart />} />
-            </Route>
+      <ThemeProvider>
+        <AuthProvider>
+          <CartProvider>
+            <BrowserRouter>
+              <Routes>
+                {/* Public storefront */}
+                <Route element={<MainLayout />}>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/catalog" element={<Catalog />} />
+                  <Route path="/product/:id" element={<ProductDetail />} />
+                  <Route path="/cart" element={<Cart />} />
 
-            <Route path="/login" element={<Login />} />
+                  {/* Authenticated client */}
+                  <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+                  <Route path="/orders" element={<ProtectedRoute><ClientOrders /></ProtectedRoute>} />
+                  <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                </Route>
 
-            {/* Authenticated Client Routes */}
-            <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/orders" element={<ClientOrders />} />
-              <Route path="/checkout" element={<Checkout />} />
-            </Route>
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
 
-            {/* Staff Routes */}
-            <Route element={<ProtectedRoute allowedRoles={['STAFF', 'ADMIN']}><StaffLayout /></ProtectedRoute>}>
-              <Route path="/staff/dashboard" element={<StaffDashboard />} />
-              <Route path="/staff/orders" element={<StaffOrders />} />
-              <Route path="/staff/inventory" element={<Inventory />} />
-              <Route path="/staff/products" element={<ProductManagement />} />
-            </Route>
+                {/* Staff / operations */}
+                <Route element={<ProtectedRoute allowedRoles={[...STAFF]}><DashboardLayout /></ProtectedRoute>}>
+                  <Route path="/staff/dashboard" element={<StaffDashboard />} />
+                  <Route path="/staff/orders" element={<StaffOrders />} />
+                  <Route path="/staff/inventory" element={<Inventory />} />
+                  <Route path="/staff/products" element={<ProductManagement />} />
+                </Route>
 
-            {/* Admin Routes */}
-            <Route element={<ProtectedRoute allowedRoles={['ADMIN']}><AdminLayout /></ProtectedRoute>}>
-              <Route path="/admin/dashboard" element={<AdminDashboard />} />
-              <Route path="/admin/users" element={<UserManagement />} />
-              <Route path="/admin/staff" element={<StaffManagement />} />
-              <Route path="/admin/settings" element={<AdminSettings />} />
-            </Route>
+                {/* Admin only */}
+                <Route element={<ProtectedRoute allowedRoles={['ADMIN']}><DashboardLayout /></ProtectedRoute>}>
+                  <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                  <Route path="/admin/users" element={<UserManagement />} />
+                  <Route path="/admin/staff" element={<StaffManagement />} />
+                  <Route path="/admin/settings" element={<AdminSettings />} />
+                </Route>
 
-            <Route path="*" element={<div className="min-h-screen flex items-center justify-center text-2xl bg-[#050505] text-[#EBEBEB]">404 - Page Not Found</div>} />
-          </Routes>
-        </Router>
-      </AuthProvider>
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </CartProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
-
-export default App;

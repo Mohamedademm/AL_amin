@@ -27,8 +27,12 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
 
   const token = authHeader.split(' ')[1];
 
+  if (!token) {
+    return res.status(401).json({ message: 'Authentication token missing or invalid' });
+  }
+
   try {
-    const decoded = jwt.verify(token, ENV.JWT_SECRET) as { id: string; email: string; role: string };
+    const decoded = jwt.verify(token, ENV.JWT_SECRET) as unknown as { id: string; email: string; role: string };
     req.user = decoded;
     next();
   } catch (error) {

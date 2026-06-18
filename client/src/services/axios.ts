@@ -1,31 +1,31 @@
 import axios from 'axios';
 
+// Single axios instance pointed at the API, with JWT + 401 handling.
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  headers: { 'Content-Type': 'application/json' },
 });
 
-// Add token to every request automatically
+// Attach the stored bearer token to every outgoing request.
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+  if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
-// Optional: Handle global errors (e.g., token expired)
+// On an expired/invalid session (401 with a token present), force re-login.
+// Auth endpoints are excluded so failed logins keep their inline error.
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const url: string = error.config?.url || '';
+    const isAuthCall = url.includes('/auth/login') || url.includes('/auth/register');
+    if (error.response?.status === 401 && localStorage.getItem('token') && !isAuthCall) {
       localStorage.removeItem('token');
-      window.location.href = '/login';
+      if (!window.location.pathname.startsWith('/login')) window.location.href = '/login';
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

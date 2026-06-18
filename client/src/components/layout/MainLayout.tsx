@@ -1,15 +1,16 @@
 import { Outlet } from 'react-router-dom';
 import Navbar from './Navbar';
+import Footer from './Footer';
 
-const MainLayout = () => {
+// Public-facing shell: sticky navbar, page content and footer.
+export default function MainLayout() {
   return (
-    <div className="min-h-screen bg-[#050505] text-[#EBEBEB] font-inter">
+    <div className="flex min-h-screen flex-col bg-bg text-content">
       <Navbar />
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="flex-1">
         <Outlet />
       </main>
+      <Footer />
     </div>
   );
-};
-
-export default MainLayout;
+}

@@ -1,135 +1,126 @@
-:root {
-  --text: #EBEBEB;
-  --text-h: #EBEBEB;
-  --bg: #050505;
-  --border: rgba(255, 255, 255, 0.1);
-  --code-bg: rgba(255, 255, 255, 0.05);
-  --accent: #10b981;
-  --accent-bg: rgba(16, 185, 129, 0.1);
-  --accent-border: rgba(16, 185, 129, 0.5);
-  --social-bg: rgba(255, 255, 255, 0.05);
-  --shadow:
-    rgba(0, 0, 0, 0.8) 0 10px 15px -3px, rgba(0, 0, 0, 0.6) 0 4px 6px -2px;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-  --sans: 'Inter', sans-serif;
-  --heading: 'Newsreader', serif;
-  --mono: 'Space Grotesk', monospace;
+/* ----------------------------------------------------------------------------
+   Surgical Emerald — design tokens (RGB channel triplets for alpha support)
+---------------------------------------------------------------------------- */
+@layer base {
+  :root {
+    --bg: 250 250 250;            /* #FAFAFA */
+    --surface: 255 255 255;       /* #FFFFFF */
+    --surface-2: 244 244 245;     /* zinc-100 */
+    --content: 15 23 42;          /* slate-900 */
+    --muted: 100 116 139;         /* slate-500 */
+    --line: 226 232 240;          /* slate-200 */
+    --primary: 16 185 129;        /* emerald-500 */
+    --primary-strong: 5 150 105;  /* emerald-600 */
+    --primary-contrast: 255 255 255;
+    color-scheme: light;
+  }
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  .dark {
+    --bg: 10 10 11;               /* near-black */
+    --surface: 19 19 22;          /* #131316 */
+    --surface-2: 24 24 27;        /* zinc-900 */
+    --content: 235 235 235;       /* #EBEBEB */
+    --muted: 148 163 184;         /* slate-400 */
+    --line: 39 39 42;             /* zinc-800 */
+    --primary: 16 185 129;        /* emerald-500 */
+    --primary-strong: 52 211 153; /* emerald-400 */
+    --primary-contrast: 5 12 9;
+    color-scheme: dark;
+  }
 
-  @media (max-width: 1024px) {
-    font-size: 16px;
+  * {
+    border-color: rgb(var(--line));
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background-color: rgb(var(--bg));
+    color: rgb(var(--content));
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    transition: background-color 0.4s ease, color 0.3s ease;
+  }
+
+  h1, h2, h3 {
+    font-family: 'Newsreader', Georgia, serif;
+    letter-spacing: -0.02em;
+  }
+
+  ::selection {
+    background: rgb(var(--primary) / 0.25);
+  }
+
+  /* Themed scrollbar */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: rgb(var(--muted) / 0.4);
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: rgb(var(--primary) / 0.6); }
+}
+
+/* ----------------------------------------------------------------------------
+   Reusable component classes
+---------------------------------------------------------------------------- */
+@layer components {
+  .label-mono {
+    @apply font-mono uppercase tracking-[0.18em] text-xs text-primary;
+  }
+
+  .card-surface {
+    @apply rounded-2xl border border-line bg-surface shadow-card dark:shadow-card-dark;
+  }
+
+  .glass {
+    @apply border border-line/60 bg-surface/70 backdrop-blur-xl;
+  }
+
+  .input-base {
+    @apply w-full rounded-xl border border-line bg-surface px-4 py-3 text-content
+      placeholder:text-muted/70 outline-none transition
+      focus:border-primary focus:ring-2 focus:ring-primary/30;
+  }
+
+  .focus-ring {
+    @apply outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-bg;
   }
 }
 
-#root {
-  width: 100%;
-  margin: 0 auto;
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-}
-
-
-body {
-  margin: 0;
-  background: #050505;
-  color: #EBEBEB;
-  overflow-x: hidden;
-  position: relative;
-}
-
-/* Cyber Serif Spotlight Effect */
-body::before {
-  content: "";
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background:
-    radial-gradient(circle at 50% -20%, rgba(16, 185, 129, 0.15) 0%, transparent 50%),
-    radial-gradient(circle at 0% 0%, rgba(16, 185, 129, 0.05) 0%, transparent 30%);
-  pointer-events: none;
-  z-index: -1;
-}
-
-#root {
-  width: 100%;
-  margin: 0 auto;
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-}
-
-/* Shimmer Border Animation */
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-.shimmer-border {
-  position: relative;
-  background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.5), transparent);
-  background-size: 200% 100%;
-  animation: shimmer 3s infinite linear;
-}
-
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 700;
-  color: var(--text-h);
-}
-
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
+/* ----------------------------------------------------------------------------
+   Utilities
+---------------------------------------------------------------------------- */
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary to-emerald-300 bg-clip-text text-transparent;
   }
-}
 
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
+  .container-page {
+    @apply mx-auto w-full max-w-7xl px-5 sm:px-6 lg:px-8;
   }
-}
 
-p {
-  margin: 0;
-}
+  /* Ambient emerald spotlight used behind hero sections */
+  .spotlight {
+    background:
+      radial-gradient(60% 50% at 50% 0%, rgb(var(--primary) / 0.12) 0%, transparent 70%),
+      radial-gradient(40% 40% at 100% 10%, rgb(var(--primary) / 0.08) 0%, transparent 60%);
+  }
 
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
-  border: 1px solid var(--border);
+  .shimmer-line {
+    background: linear-gradient(90deg, transparent, rgb(var(--primary) / 0.6), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 3s infinite linear;
+  }
 }

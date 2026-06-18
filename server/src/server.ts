@@ -4,6 +4,15 @@ import morgan from 'morgan';
 import { ENV } from './config/env';
 import { errorHandler, AppError } from './middleware/errorHandler';
 
+import authRoutes from './modules/auth/routes';
+import productRoutes from './modules/product/routes';
+import categoryRoutes from './modules/category/routes';
+import orderRoutes from './modules/order/routes';
+import inventoryRoutes from './modules/inventory/routes';
+import spotRoutes from './modules/spot/routes';
+import userRoutes from './modules/user/routes';
+import dashboardRoutes from './modules/dashboard/routes';
+
 const app = express();
 
 // Middleware
@@ -16,11 +25,15 @@ app.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-// Future Route Mounts (Sprint 2)
-// app.use('/api/categories', categoryRoutes);
-// app.use('/api/products', productRoutes);
-// app.use('/api/orders', orderRoutes);
-// app.use('/api/auth', authRoutes);
+// API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/inventory', inventoryRoutes);
+app.use('/api/spots', spotRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // 404 Handler
 app.use((req, res, next) => {

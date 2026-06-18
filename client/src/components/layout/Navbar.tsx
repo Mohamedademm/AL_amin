@@ -1,76 +1,151 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { ShoppingCart, LogOut, LayoutDashboard, Package, User as UserIcon, ChevronDown } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { LogOut, User } from 'lucide-react';
+import { useCart } from '../../context/CartContext';
+import { Logo } from '../brand/Logo';
+import { ThemeToggle } from '../ui/ThemeToggle';
+import { buttonClasses } from '../ui/Button';
+import { cn } from '../../lib/cn';
+import { initials } from '../../utils/format';
 
-const Navbar = () => {
-  const { user, logout } = useAuth();
+const navLinks = [
+  { to: '/', label: 'Home', end: true },
+  { to: '/catalog', label: 'Catalog' },
+];
+
+// Public top navigation: brand, links, theme switch, cart and account menu.
+export default function Navbar() {
+  const { user, logout, isStaff } = useAuth();
+  const { count } = useCart();
   const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    setMenuOpen(false);
+    navigate('/');
   };
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-[#10b981]/30 bg-[#050505]/80 backdrop-blur-xl transition-all duration-300">
-      <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-        <div className="flex items-center gap-4 group cursor-pointer">
-          <div className="relative">
-            <div className="absolute inset-0 bg-[#10b981] blur-md opacity-50 group-hover:opacity-100 transition-opacity"></div>
-            <div className="relative w-10 h-10 bg-[#10b981] rounded-full flex items-center justify-center text-[#050505] font-bold text-xl shadow-[0_0_20px_rgba(16,185,129,0.6)] transition-transform group-hover:scale-110">
-              AA
-            </div>
-          </div>
-          <div className="font-newsreader leading-none">
-            <h1 className="text-2xl font-bold text-[#EBEBEB] tracking-tighter group-hover:text-[#10b981] transition-colors">
-              Al Amine
-            </h1>
-            <p className="text-[10px] text-[#10b981] font-space-grotesk uppercase tracking-[0.2em] opacity-80">
-              Management System
-            </p>
-          </div>
+    <header className="sticky top-0 z-50 border-b border-line/70 bg-bg/70 backdrop-blur-xl">
+      <nav className="container-page flex h-16 items-center justify-between gap-4">
+        <Link to="/" aria-label="Al Amine home">
+          <Logo size={36} />
+        </Link>
+
+        <div className="hidden items-center gap-1 md:flex">
+          {navLinks.map((l) => (
+            <NavLink
+              key={l.to}
+              to={l.to}
+              end={l.end}
+              className={({ isActive }) =>
+                cn(
+                  'rounded-lg px-3.5 py-2 text-sm font-medium transition-colors',
+                  isActive ? 'text-primary' : 'text-muted hover:text-content',
+                )
+              }
+            >
+              {l.label}
+            </NavLink>
+          ))}
+          {user && !isStaff && (
+            <NavLink
+              to="/orders"
+              className={({ isActive }) =>
+                cn('rounded-lg px-3.5 py-2 text-sm font-medium transition-colors', isActive ? 'text-primary' : 'text-muted hover:text-content')
+              }
+            >
+              My Orders
+            </NavLink>
+          )}
         </div>
 
-        <div className="flex items-center gap-8">
-          <div className="hidden md:flex gap-8 text-sm font-medium font-inter">
-            <Link to="/" className="text-[#EBEBEB]/50 hover:text-[#10b981] transition-all hover:translate-y-[-1px]">Home</Link>
-            <Link to="/catalog" className="text-[#EBEBEB]/50 hover:text-[#10b981] transition-all hover:translate-y-[-1px]">Catalog</Link>
-            <Link to="/orders" className="text-[#EBEBEB]/50 hover:text-[#10b981] transition-all hover:translate-y-[-1px]">Orders</Link>
-          </div>
+        <div className="flex items-center gap-2 sm:gap-3">
+          <ThemeToggle />
+
+          <Link
+            to="/cart"
+            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full border border-line bg-surface text-content transition-all hover:border-primary/50 hover:text-primary focus-ring"
+            aria-label="Cart"
+          >
+            <ShoppingCart size={17} />
+            {count > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-contrast">
+                {count}
+              </span>
+            )}
+          </Link>
 
           {user ? (
-            <div className="flex items-center gap-4 pl-6 border-l border-[#10b981]/20">
-              <div className="flex items-center gap-3 text-sm font-inter group">
-                <div className="w-8 h-8 bg-[#10b981]/10 border border-[#10b981]/40 rounded-full flex items-center justify-center text-[#10b981] group-hover:bg-[#10b981]/20 transition-colors">
-                  <User size={16} />
-                </div>
-                <div className="text-right">
-                  <p className="font-medium text-[#EBEBEB] leading-none">{user.firstName}</p>
-                  <p className="text-[9px] text-[#10b981] font-space-grotesk uppercase tracking-widest opacity-80">
-                    {user.role}
-                  </p>
-                </div>
-              </div>
+            <div className="relative">
               <button
-                onClick={handleLogout}
-                className="flex items-center gap-2 px-4 py-1.5 text-xs text-[#EBEBEB]/60 hover:text-red-400 hover:bg-red-400/10 rounded-full transition-all border border-transparent hover:border-red-400/30 font-inter"
+                onClick={() => setMenuOpen((o) => !o)}
+                className="flex items-center gap-2 rounded-full border border-line bg-surface py-1 pl-1 pr-2.5 transition-colors hover:border-primary/50 focus-ring"
               >
-                <LogOut size={14} />
-                Logout
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/15 text-xs font-bold text-primary">
+                  {initials(user.firstName, user.lastName)}
+                </span>
+                <span className="hidden text-sm font-medium text-content sm:block">{user.firstName}</span>
+                <ChevronDown size={14} className={cn('text-muted transition-transform', menuOpen && 'rotate-180')} />
               </button>
+
+              {menuOpen && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
+                  <div className="absolute right-0 z-20 mt-2 w-56 origin-top-right animate-scale-in rounded-2xl border border-line bg-surface p-2 shadow-card dark:shadow-card-dark">
+                    <div className="border-b border-line px-3 py-2">
+                      <p className="truncate text-sm font-semibold text-content">{user.firstName} {user.lastName}</p>
+                      <p className="truncate text-xs text-muted">{user.email}</p>
+                      <span className="mt-1 inline-block font-mono text-[10px] uppercase tracking-widest text-primary">{user.role}</span>
+                    </div>
+                    <div className="py-1">
+                      {isStaff ? (
+                        <MenuLink to="/staff/dashboard" icon={<LayoutDashboard size={15} />} onClick={() => setMenuOpen(false)}>
+                          Dashboard
+                        </MenuLink>
+                      ) : (
+                        <>
+                          <MenuLink to="/orders" icon={<Package size={15} />} onClick={() => setMenuOpen(false)}>
+                            My Orders
+                          </MenuLink>
+                          <MenuLink to="/profile" icon={<UserIcon size={15} />} onClick={() => setMenuOpen(false)}>
+                            Profile
+                          </MenuLink>
+                        </>
+                      )}
+                    </div>
+                    <button
+                      onClick={handleLogout}
+                      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-500 transition-colors hover:bg-red-500/10"
+                    >
+                      <LogOut size={15} /> Log out
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           ) : (
-            <Link
-              to="/login"
-              className="px-6 py-2 bg-[#10b981] text-[#050505] rounded-full hover:bg-[#10b981]/90 transition-all font-bold text-xs uppercase tracking-widest shadow-[0_0_15px_rgba(16,185,129,0.4)] font-inter"
-            >
-              Login
+            <Link to="/login" className={buttonClasses('primary', 'sm')}>
+              Sign in
             </Link>
           )}
         </div>
-      </div>
-    </nav>
+      </nav>
+    </header>
   );
-};
+}
 
-export default Navbar;
+// Internal helper for account-menu navigation rows.
+function MenuLink({ to, icon, children, onClick }: { to: string; icon: React.ReactNode; children: React.ReactNode; onClick: () => void }) {
+  return (
+    <Link
+      to={to}
+      onClick={onClick}
+      className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-content transition-colors hover:bg-surface-2"
+    >
+      {icon} {children}
+    </Link>
+  );
+}
