@@ -2,7 +2,7 @@
 
 A high-end B2C E-commerce and Distributed Inventory Management System designed for professional operational control, flexible pricing, and smart logistics.
 
-![Project Status](https://img.shields.io/badge/Status-Sprint_2_In_Progress-success)
+![Project Status](https://img.shields.io/badge/Status-Sprint_3_Complete-success)
 ![Tech Stack](https://img.shields.io/badge/Stack-React_19_|_Node.js_|_Prisma_|_PostgreSQL-10b981)
 ![Theme](https://img.shields.io/badge/UI-Light_%2B_Dark-10b981)
 
@@ -106,8 +106,12 @@ All seeded accounts share the password **`Password123!`**:
 | POST·PATCH·DELETE | `/spots` … | Admin/Manager | Spot CRUD |
 | GET·POST·PATCH·DELETE | `/users` … | Admin | User management |
 | GET | `/dashboard/stats` | Staff | Aggregated KPIs |
+| GET·POST·PATCH·DELETE | `/discounts` … | Admin/Manager | Dynamic pricing rules (category/product, stealth constraints) |
+| GET | `/audit` | Admin | Audit trail of pricing/discount actions |
 
-All responses use the envelope `{ "status": "success", "data": ... }`.
+All responses use the envelope `{ "status": "success", "data": ... }`. Product
+responses also carry a live `discountPercent` and `discountedPrice` (stealth
+expiry/quantity caps are never exposed to clients).
 
 ## 🗺 Roadmap
 
@@ -121,7 +125,8 @@ All responses use the envelope `{ "status": "success", "data": ... }`.
 - [x] Full client storefront, staff & admin consoles.
 - [x] Design system with light/dark mode, logo, animations.
 
-### Sprint 3: Advanced Logic ⏳
-- [ ] Dynamic pricing engine & category discounts.
-- [ ] Stealth constraints (hidden expirations).
-- [ ] Audit logging UI & advanced distribution routing.
+### Sprint 3: Advanced Logic ✅
+- [x] Dynamic pricing engine & category/product discounts.
+- [x] Stealth constraints (hidden expiry + quantity caps).
+- [x] Audit logging (discount actions + price changes) with admin viewer.
+- [ ] Advanced distribution routing (next).

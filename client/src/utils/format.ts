@@ -21,3 +21,7 @@ export const formatDateTime = (value: string | Date): string =>
 // Initials for avatar fallbacks.
 export const initials = (first?: string, last?: string): string =>
   `${first?.[0] ?? ''}${last?.[0] ?? ''}`.toUpperCase() || '?';
+
+// Effective price for a product: the discounted price when one applies.
+export const effectivePrice = (p: { price: string | number; discountedPrice?: number }): number =>
+  p.discountedPrice ?? (typeof p.price === 'string' ? parseFloat(p.price) : p.price);

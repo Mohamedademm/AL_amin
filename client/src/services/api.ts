@@ -1,9 +1,12 @@
 import http from './axios';
 import type {
   ApiEnvelope,
+  AuditEntry,
   AuthResult,
   Category,
   DashboardStats,
+  Discount,
+  DiscountScope,
   InventoryRecord,
   Order,
   OrderStatus,
@@ -73,4 +76,16 @@ export const userApi = {
 
 export const dashboardApi = {
   stats: () => unwrap<DashboardStats>(http.get('/dashboard/stats')),
+};
+
+export const discountApi = {
+  list: () => unwrap<Discount[]>(http.get('/discounts')),
+  create: (data: { percentage: number; scope: DiscountScope; categoryId?: string; productId?: string; endsAt?: string; maxQuantity?: number }) =>
+    unwrap<Discount>(http.post('/discounts', data)),
+  setActive: (id: string, active: boolean) => unwrap<Discount>(http.patch(`/discounts/${id}`, { active })),
+  remove: (id: string) => http.delete(`/discounts/${id}`),
+};
+
+export const auditApi = {
+  list: () => unwrap<AuditEntry[]>(http.get('/audit')),
 };

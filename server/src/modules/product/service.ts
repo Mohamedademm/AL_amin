@@ -1,28 +1,32 @@
 import prisma from '../../config/database';
 import { ProductCreateInput, ProductUpdateInput } from './types';
+import { getActiveDiscounts, attachPricing } from '../../lib/pricing';
+import { AuditService } from '../audit/service';
 
 /**
  * Service handling business logic for Products.
  */
 export const ProductService = {
   /**
-   * Retrieves all products with their category details.
+   * Retrieves all products with their category and live discounted price.
    */
   async getAll() {
-    return prisma.product.findMany({
-      include: { category: true },
-      orderBy: { name: 'asc' },
-    });
+    const [products, discounts] = await Promise.all([
+      prisma.product.findMany({ include: { category: true }, orderBy: { name: 'asc' } }),
+      getActiveDiscounts(),
+    ]);
+    return products.map((p) => attachPricing(p, discounts));
   },
 
   /**
-   * Retrieves a single product by ID.
+   * Retrieves a single product by ID with its live discounted price.
    */
   async getById(id: string) {
-    return prisma.product.findUnique({
-      where: { id },
-      include: { category: true },
-    });
+    const [product, discounts] = await Promise.all([
+      prisma.product.findUnique({ where: { id }, include: { category: true } }),
+      getActiveDiscounts(),
+    ]);
+    return product ? attachPricing(product, discounts) : null;
   },
 
   /**
@@ -33,13 +37,25 @@ export const ProductService = {
   },
 
   /**
-   * Updates an existing product.
+   * Updates a product, recording any price change in the audit trail.
    */
-  async update(id: string, data: ProductUpdateInput) {
-    return prisma.product.update({
-      where: { id },
-      data,
-    });
+  async update(id: string, data: ProductUpdateInput, userId?: string) {
+    const existing = await prisma.product.findUnique({ where: { id } });
+    const updated = await prisma.product.update({ where: { id }, data });
+
+    // Audit price changes for full administrative transparency.
+    if (userId && existing && data.price !== undefined && Number(existing.price) !== Number(updated.price)) {
+      await AuditService.log({
+        userId,
+        action: 'UPDATE_PRICE',
+        entity: 'Product',
+        entityId: id,
+        oldValue: String(existing.price),
+        newValue: String(updated.price),
+      });
+    }
+
+    return updated;
   },
 
   /**

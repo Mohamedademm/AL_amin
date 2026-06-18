@@ -30,6 +30,36 @@ export interface Product {
   category?: Category;
   imageUrl?: string | null;
   createdAt?: string;
+  // Live pricing computed by the API from active discounts.
+  discountPercent?: number;
+  discountedPrice?: number;
+}
+
+export type DiscountScope = 'CATEGORY' | 'PRODUCT';
+
+export interface Discount {
+  id: string;
+  percentage: number;
+  categoryId?: string | null;
+  productId?: string | null;
+  active: boolean;
+  startsAt: string;
+  endsAt?: string | null;
+  maxQuantity?: number | null;
+  createdAt: string;
+  category?: { name: string } | null;
+  product?: { name: string } | null;
+}
+
+export interface AuditEntry {
+  id: string;
+  action: string;
+  entity: string;
+  entityId: string;
+  oldValue?: string | null;
+  newValue?: string | null;
+  timestamp: string;
+  user?: { firstName: string; lastName: string; email: string };
 }
 
 export interface VendingSpot {

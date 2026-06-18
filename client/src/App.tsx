@@ -28,6 +28,8 @@ import AdminDashboard from './pages/admin/Dashboard';
 import UserManagement from './pages/admin/UserManagement';
 import StaffManagement from './pages/admin/StaffManagement';
 import AdminSettings from './pages/admin/AdminSettings';
+import Pricing from './pages/admin/Pricing';
+import Audit from './pages/admin/Audit';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false, retry: 1 } },
@@ -72,6 +74,8 @@ export default function App() {
                   <Route path="/admin/dashboard" element={<AdminDashboard />} />
                   <Route path="/admin/users" element={<UserManagement />} />
                   <Route path="/admin/staff" element={<StaffManagement />} />
+                  <Route path="/admin/pricing" element={<Pricing />} />
+                  <Route path="/admin/audit" element={<Audit />} />
                   <Route path="/admin/settings" element={<AdminSettings />} />
                 </Route>
 

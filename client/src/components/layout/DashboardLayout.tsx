@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, ShoppingBag, Boxes, Package, Users, UserCog,
-  Settings, Store, Menu, X, LogOut,
+  Settings, Store, Menu, X, LogOut, Tag, ScrollText,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { Logo, LogoMark } from '../brand/Logo';
@@ -28,6 +28,8 @@ const adminNav: NavItem[] = [
   { to: '/admin/dashboard', label: 'Overview', icon: <LayoutDashboard size={18} /> },
   { to: '/admin/users', label: 'Users', icon: <Users size={18} /> },
   { to: '/admin/staff', label: 'Staff', icon: <UserCog size={18} /> },
+  { to: '/admin/pricing', label: 'Pricing', icon: <Tag size={18} /> },
+  { to: '/admin/audit', label: 'Audit Log', icon: <ScrollText size={18} /> },
   { to: '/admin/settings', label: 'Settings', icon: <Settings size={18} /> },
 ];
 

@@ -3,7 +3,7 @@ import { Minus, Plus, Trash2, ShoppingBag, ArrowRight } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { ProductImage } from '../../components/common/ProductImage';
 import { buttonClasses } from '../../components/ui/Button';
-import { formatPrice } from '../../utils/format';
+import { formatPrice, effectivePrice } from '../../utils/format';
 
 export default function Cart() {
   const { items, setQty, remove, subtotal, count } = useCart();
@@ -51,7 +51,7 @@ export default function Cart() {
                     <span className="w-8 text-center text-sm font-medium">{quantity}</span>
                     <button onClick={() => setQty(product.id, quantity + 1)} className="p-2 text-muted hover:text-primary" aria-label="Increase"><Plus size={14} /></button>
                   </div>
-                  <span className="font-mono font-semibold text-content">{formatPrice(Number(product.price) * quantity)}</span>
+                  <span className="font-mono font-semibold text-content">{formatPrice(effectivePrice(product) * quantity)}</span>
                 </div>
               </div>
             </div>

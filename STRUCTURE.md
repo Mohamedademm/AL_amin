@@ -26,8 +26,9 @@ directories are added, removed, or moved.
 - `server/`: Backend (Node + Express 5 + Prisma 7 + PostgreSQL)
   - `src/`
     - `config/`: Env + Prisma client (`database.ts`)
+    - `lib/`: Cross-cutting logic (`pricing.ts` — discount/effective-price engine)
     - `middleware/`: `auth` (JWT + RBAC), `errorHandler`
-    - `modules/`: Domain modules, each with `routes` / `controller` / `service` (`auth`, `product`, `category`, `order`, `inventory`, `spot`, `user`, `dashboard`)
+    - `modules/`: Domain modules, each with `routes` / `controller` / `service` (`auth`, `product`, `category`, `order`, `inventory`, `spot`, `user`, `dashboard`, `discount`, `audit`)
     - `server.ts`: App entry + route mounting
   - `prisma/`: `schema.prisma`, `migrations/`, `seed.ts`
   - `.env` / `.env.example`

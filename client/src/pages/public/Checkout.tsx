@@ -8,7 +8,7 @@ import { orderApi, spotApi } from '../../services/api';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { ProductImage } from '../../components/common/ProductImage';
-import { formatPrice } from '../../utils/format';
+import { formatPrice, effectivePrice } from '../../utils/format';
 
 export default function Checkout() {
   const { items, subtotal, clear } = useCart();
@@ -93,7 +93,7 @@ export default function Checkout() {
                     <p className="text-sm font-medium text-content">{product.name}</p>
                     <p className="text-xs text-muted">Qty {quantity}</p>
                   </div>
-                  <span className="font-mono text-sm">{formatPrice(Number(product.price) * quantity)}</span>
+                  <span className="font-mono text-sm">{formatPrice(effectivePrice(product) * quantity)}</span>
                 </div>
               ))}
             </div>

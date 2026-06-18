@@ -12,6 +12,8 @@ import inventoryRoutes from './modules/inventory/routes';
 import spotRoutes from './modules/spot/routes';
 import userRoutes from './modules/user/routes';
 import dashboardRoutes from './modules/dashboard/routes';
+import discountRoutes from './modules/discount/routes';
+import auditRoutes from './modules/audit/routes';
 
 const app = express();
 
@@ -34,6 +36,8 @@ app.use('/api/inventory', inventoryRoutes);
 app.use('/api/spots', spotRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/discounts', discountRoutes);
+app.use('/api/audit', auditRoutes);
 
 // 404 Handler
 app.use((req, res, next) => {

@@ -55,7 +55,15 @@ export default function ProductDetail() {
         <div className="flex flex-col">
           {product.category && <Badge tone="primary" className="w-fit">{product.category.name}</Badge>}
           <h1 className="mt-4 text-4xl font-bold">{product.name}</h1>
-          <p className="mt-3 font-mono text-3xl font-semibold text-gradient">{formatPrice(product.price)}</p>
+          <div className="mt-3 flex items-baseline gap-3">
+            <p className="font-mono text-3xl font-semibold text-gradient">{formatPrice(product.discountedPrice ?? product.price)}</p>
+            {!!product.discountPercent && (
+              <>
+                <span className="font-mono text-lg text-muted line-through">{formatPrice(product.price)}</span>
+                <span className="rounded-full bg-red-500 px-2 py-0.5 text-xs font-bold text-white">−{product.discountPercent}%</span>
+              </>
+            )}
+          </div>
           <p className="mt-6 leading-relaxed text-muted">{product.description}</p>
 
           <div className="mt-8 flex items-center gap-4">

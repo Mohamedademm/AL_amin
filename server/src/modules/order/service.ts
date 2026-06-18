@@ -2,6 +2,7 @@ import prisma from '../../config/database';
 import { AppError } from '../../middleware/errorHandler';
 import { OrderCreateInput } from './types';
 import { OrderStatus, Prisma } from '@prisma/client';
+import { getActiveDiscounts, discountPercentFor } from '../../lib/pricing';
 
 // Allowed status transitions enforcing the order state machine.
 const TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
@@ -29,11 +30,16 @@ export const OrderService = {
       spotId = spot.id;
     }
 
-    const priceMap = new Map(products.map((p) => [p.id, p.price]));
+    // Price each line from the live product price minus any active discount,
+    // so the charged amount matches what the storefront displayed.
+    const discounts = await getActiveDiscounts();
+    const productMap = new Map(products.map((p) => [p.id, p]));
     let total = new Prisma.Decimal(0);
     const items = data.items.map((i) => {
       if (i.quantity <= 0) throw new AppError('Quantity must be greater than zero', 400);
-      const price = priceMap.get(i.productId)!;
+      const product = productMap.get(i.productId)!;
+      const percent = discountPercentFor(product, discounts);
+      const price = percent > 0 ? product.price.mul(100 - percent).div(100) : product.price;
       total = total.add(price.mul(i.quantity));
       return { productId: i.productId, quantity: i.quantity, price };
     });
