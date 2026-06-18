@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { ProductService } from './service';
 import { AppError } from '../../middleware/errorHandler';
+import { AuthRequest } from '../../middleware/auth';
 
 /**
  * Controller for handling Product API requests.
@@ -25,7 +26,7 @@ export const ProductController = {
    */
   async getById(req: Request, res: Response, next: NextFunction) {
     try {
-      const product = await ProductService.getById(req.params.id);
+      const product = await ProductService.getById((req.params.id as string));
       if (!product) throw new AppError('Product not found', 404);
       res.json({ status: 'success', data: product });
     } catch (error) {
@@ -52,7 +53,7 @@ export const ProductController = {
    */
   async update(req: Request, res: Response, next: NextFunction) {
     try {
-      const product = await ProductService.update(req.params.id, req.body);
+      const product = await ProductService.update((req.params.id as string), req.body, (req as AuthRequest).user?.id);
       if (!product) throw new AppError('Product not found', 404);
       res.json({ status: 'success', data: product });
     } catch (error) {
@@ -66,7 +67,7 @@ export const ProductController = {
    */
   async delete(req: Request, res: Response, next: NextFunction) {
     try {
-      await ProductService.delete(req.params.id);
+      await ProductService.delete((req.params.id as string));
       res.status(204).send();
     } catch (error) {
       next(error);

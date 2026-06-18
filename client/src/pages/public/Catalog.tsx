@@ -1,91 +1,89 @@
-import { useState, useEffect } from 'react';
-import api from '../../services/axios';
-import Navbar from '../../components/layout/Navbar';
-import { ShoppingCart, Search } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Search, PackageOpen } from 'lucide-react';
+import { productApi, categoryApi } from '../../services/api';
+import { ProductCard } from '../../components/common/ProductCard';
+import { Reveal } from '../../components/ui/Reveal';
+import { PageLoader } from '../../components/ui/Spinner';
+import { cn } from '../../lib/cn';
 
-const Catalog = () => {
-  const [products, setProducts] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [loading, setLoading] = useState(true);
+export default function Catalog() {
+  const { data: products, isLoading } = useQuery({ queryKey: ['products'], queryFn: productApi.list });
+  const { data: categories } = useQuery({ queryKey: ['categories'], queryFn: categoryApi.list });
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await api.getProducts();
-        setProducts(response.data);
-      } catch (error) {
-        console.error('Failed to fetch products', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProducts();
-  }, []);
+  const [search, setSearch] = useState('');
+  const [activeCat, setActiveCat] = useState<string>('all');
 
-  const filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filtered = useMemo(() => {
+    return (products ?? []).filter((p) => {
+      const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase());
+      const matchesCat = activeCat === 'all' || p.categoryId === activeCat;
+      return matchesSearch && matchesCat;
+    });
+  }, [products, search, activeCat]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900">Product Catalog</h1>
-          
-          <div className="relative w-80">
-            <div className="absolute left-4 top-3 text-gray-400">
-              <Search size={20} />
-            </div>
-            <input
-              type="text"
-              placeholder="Search products..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+    <div className="container-page py-12">
+      <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+        <div>
+          <span className="label-mono">Storefront</span>
+          <h1 className="mt-2 text-4xl font-bold">Product Catalog</h1>
+          <p className="mt-2 text-muted">Browse {products?.length ?? 0} products across every boutique.</p>
         </div>
-
-        {loading ? (
-          <div className="text-center py-20">Loading products...</div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {filteredProducts.map((product) => (
-              <div key={product.id} className="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition group">
-                <div className="h-56 bg-gray-100 flex items-center justify-center relative">
-                  {product.image ? (
-                    <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="text-6xl text-gray-300">📦</div>
-                  )}
-                  <div className="absolute top-4 right-4 bg-white/90 px-3 py-1 rounded-full text-xs font-medium">
-                    {product.stock_quantity} in stock
-                  </div>
-                </div>
-                
-                <div className="p-6">
-                  <div className="text-sm text-blue-600 font-medium mb-1">{product.category}</div>
-                  <h3 className="font-semibold text-xl mb-2 line-clamp-2">{product.name}</h3>
-                  <p className="text-gray-600 text-sm line-clamp-2 mb-4">{product.description}</p>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="text-2xl font-bold text-gray-900">
-                      {product.price} MAD
-                    </div>
-                    <button className="bg-blue-600 text-white px-6 py-2.5 rounded-2xl hover:bg-blue-700 transition flex items-center gap-2 text-sm font-medium">
-                      <ShoppingCart size={18} />
-                      Add to Cart
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        <div className="relative w-full md:w-80">
+          <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search products…"
+            className="input-base pl-11"
+          />
+        </div>
       </div>
+
+      {/* Category filter chips */}
+      <div className="mt-8 flex flex-wrap gap-2">
+        <CategoryChip active={activeCat === 'all'} onClick={() => setActiveCat('all')}>All</CategoryChip>
+        {categories?.map((c) => (
+          <CategoryChip key={c.id} active={activeCat === c.id} onClick={() => setActiveCat(c.id)}>
+            {c.name}
+          </CategoryChip>
+        ))}
+      </div>
+
+      {isLoading ? (
+        <PageLoader label="Loading catalog" />
+      ) : filtered.length === 0 ? (
+        <div className="flex flex-col items-center justify-center gap-3 py-24 text-muted">
+          <PackageOpen size={40} className="opacity-50" />
+          <p>No products match your search.</p>
+        </div>
+      ) : (
+        <div className="mt-10 grid grid-cols-2 gap-5 lg:grid-cols-4">
+          {filtered.map((p, i) => (
+            <Reveal key={p.id} delay={(i % 4) * 60}>
+              <ProductCard product={p} />
+            </Reveal>
+          ))}
+        </div>
+      )}
     </div>
   );
-};
+}
 
-export default Catalog;
+// Pill toggle for filtering by category.
+function CategoryChip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        'rounded-full border px-4 py-1.5 text-sm font-medium transition-all',
+        active
+          ? 'border-primary bg-primary text-primary-contrast'
+          : 'border-line text-muted hover:border-primary/50 hover:text-content',
+      )}
+    >
+      {children}
+    </button>
+  );
+}

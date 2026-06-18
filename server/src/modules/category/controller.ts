@@ -25,7 +25,7 @@ export const CategoryController = {
    */
   async getById(req: Request, res: Response, next: NextFunction) {
     try {
-      const category = await CategoryService.getById(req.params.id);
+      const category = await CategoryService.getById((req.params.id as string));
       if (!category) throw new AppError('Category not found', 404);
       res.json({ status: 'success', data: category });
     } catch (error) {
@@ -52,7 +52,7 @@ export const CategoryController = {
    */
   async update(req: Request, res: Response, next: NextFunction) {
     try {
-      const category = await CategoryService.update(req.params.id, req.body);
+      const category = await CategoryService.update((req.params.id as string), req.body);
       if (!category) throw new AppError('Category not found', 404);
       res.json({ status: 'success', data: category });
     } catch (error) {
@@ -66,7 +66,7 @@ export const CategoryController = {
    */
   async delete(req: Request, res: Response, next: NextFunction) {
     try {
-      await CategoryService.delete(req.params.id);
+      await CategoryService.delete((req.params.id as string));
       res.status(204).send();
     } catch (error) {
       next(error);

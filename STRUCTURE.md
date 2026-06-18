@@ -1,31 +1,39 @@
 # Project Structure
 
-This file provides a high-level overview of the project's file organization. It must be updated whenever files or directories are added, removed, or moved.
+High-level map of the project's file organization. Update whenever files or
+directories are added, removed, or moved.
 
 ## Directory Map
 
-- `client/`: Frontend application (Vite + React + Tailwind)
-  - `src/`: Source code
-    - `assets/`: Static assets and images
-    - `components/`: Reusable UI components (organized by feature: ui, common, layout, forms, etc.)
-    - `context/`: React context providers for global state (e.g., Auth)
-    - `hooks/`: Custom React hooks
-    - `pages/`: Page-level components (organized by user role: owner, worker, employee, public)
-    - `routes/`: Route definitions and guards (e.g., ProtectedRoute)
-    - `services/`: API clients and external service integrations (includes axios config)
-    - `types/`: TypeScript type definitions
-    - `utils/`: Helper functions and utility libraries
-  - `public/`: Static assets
-- `server/`: Backend application (Node.js + Prisma + Express)
-  - `src/`: Source code
-    - `config/`: Environment and DB config
-    - `lib/`: Third-party library setups
-    - `middleware/`: Express middlewares (auth, error handling)
-    - `modules/`: Domain-driven logic (separated by entity: auth, product, inventory, etc.)
-    - `types/`: Server-side type definitions
-    - `utils/`: Helper functions
-- `docs/`: Project documentation
-  - `sprint-1-plan.md`: Planned tasks for the first sprint
-- `CLAUDE.md`: Project guidelines and behavioral skills
+- `client/`: Frontend (Vite + React 19 + TypeScript + Tailwind)
+  - `src/`
+    - `assets/`: Static images (e.g. `hero.png`)
+    - `components/`
+      - `brand/`: Logo mark + wordmark
+      - `ui/`: Design-system primitives (Button, Card, Input, Badge, Modal, Spinner, StatCard, PageHeader, Reveal, ThemeToggle)
+      - `common/`: Composite pieces (ProductCard, ProductImage)
+      - `layout/`: Shells (MainLayout, DashboardLayout, AuthShell, Navbar, Footer; StaffLayout/AdminLayout re-export DashboardLayout)
+    - `context/`: Global providers — `ThemeContext` (light/dark), `AuthContext` (session), `CartContext`, `ToastContext` (notifications), `ConfirmContext` (dialog)
+    - `hooks/`: Custom hooks (`useInView` for scroll reveals)
+    - `lib/`: Tiny utilities (`cn` classnames helper)
+    - `pages/`: Route components by area — `public/`, `auth/`, `staff/`, `admin/`
+    - `routes/`: Route guards (`ProtectedRoute`)
+    - `services/`: API layer — `axios` instance + typed `api` functions
+    - `types/`: Shared TypeScript domain types
+    - `utils/`: Helpers (`format` for price/date/initials)
+  - `public/`: Static assets served as-is (`favicon.svg`)
+  - `index.html`, `tailwind.config.js`, `postcss.config.js`, `vite.config.ts`
+- `server/`: Backend (Node + Express 5 + Prisma 7 + PostgreSQL)
+  - `src/`
+    - `config/`: Env + Prisma client (`database.ts`)
+    - `lib/`: Cross-cutting logic (`pricing.ts` — discount engine; `validation.ts` — email/password rules)
+    - `middleware/`: `auth` (JWT + RBAC), `errorHandler`
+    - `modules/`: Domain modules, each with `routes` / `controller` / `service` (`auth`, `product`, `category`, `order`, `inventory`, `spot`, `user`, `dashboard`, `discount`, `audit`)
+    - `server.ts`: App entry + route mounting
+  - `prisma/`: `schema.prisma`, `migrations/`, `seed.ts`
+  - `.env` / `.env.example`
+- `docs/`: Project documentation (`PROJECT.md` — full knowledge base, `sprint-1-plan.md`)
+- `docker-compose.yml`: PostgreSQL 16 service (host port 5433)
+- `CLAUDE.md`: Project guidelines
+- `TODO.md`: Prioritized improvement roadmap
 - `STRUCTURE.md`: This map
-- `MEMORY.md`: (Internal) Project memory index

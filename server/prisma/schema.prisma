@@ -41,6 +41,7 @@ model Category {
   name        String    @unique
   description String?
   products    Product[]
+  discounts   Discount[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }
@@ -57,6 +58,7 @@ model Product {
   updatedAt        DateTime @updatedAt
   inventory       Inventory[]
   orderItems       OrderItem[]
+  discounts        Discount[]
 }
 
 model VendingSpot {
@@ -129,4 +131,20 @@ model Event {
   user        User     @relation(fields: [createdBy], references: [id])
   createdAt   DateTime @default(now())
   updatedAt    DateTime @updatedAt
+}
+
+// Dynamic pricing rule applied to a whole category or a single product.
+// `endsAt` and `maxQuantity` are "stealth" constraints — never exposed to clients.
+model Discount {
+  id          String    @id @default(uuid())
+  percentage  Int       // percent off, e.g. 20 = -20%
+  categoryId  String?
+  category    Category? @relation(fields: [categoryId], references: [id])
+  productId   String?
+  product     Product?  @relation(fields: [productId], references: [id])
+  active      Boolean   @default(true)
+  startsAt    DateTime  @default(now())
+  endsAt      DateTime? // hidden from clients (stealth)
+  maxQuantity Int?      // hidden from clients (stealth)
+  createdAt   DateTime  @default(now())
 }

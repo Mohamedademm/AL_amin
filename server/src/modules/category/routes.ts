@@ -8,9 +8,9 @@ const router = Router();
 router.get('/', CategoryController.getAll);
 router.get('/:id', CategoryController.getById);
 
-// Protected access: Manage categories (Staff/Admin only)
+// Protected access: Manage categories (Admin / Manager only)
 router.use(authenticate);
-router.use(authorize(['STAFF', 'ADMIN']));
+router.use(authorize(['ADMIN', 'MANAGER']));
 
 router.post('/', CategoryController.create);
 router.patch('/:id', CategoryController.update);

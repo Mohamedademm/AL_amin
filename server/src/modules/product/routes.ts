@@ -8,9 +8,9 @@ const router = Router();
 router.get('/', ProductController.getAll);
 router.get('/:id', ProductController.getById);
 
-// Protected access: Manage products (Staff/Admin only)
+// Protected access: Manage products (Admin / Manager only)
 router.use(authenticate);
-router.use(authorize(['STAFF', 'ADMIN']));
+router.use(authorize(['ADMIN', 'MANAGER']));
 
 router.post('/', ProductController.create);
 router.patch('/:id', ProductController.update);
