@@ -6,7 +6,7 @@ import { PageHeader } from '../../components/ui/PageHeader';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Modal } from '../../components/ui/Modal';
-import { PageLoader } from '../../components/ui/Spinner';
+import { DataTable, type Column } from '../../components/ui/DataTable';
 import { ProductImage } from '../../components/common/ProductImage';
 import { useConfirm } from '../../context/ConfirmContext';
 import { useToast } from '../../context/ToastContext';
@@ -64,7 +64,30 @@ export default function ProductManagement() {
     setOpen(true);
   };
 
-  if (isLoading) return <PageLoader label="Loading products" />;
+  const columns: Column<Product>[] = [
+    {
+      key: 'product', header: 'Product', sortValue: (p) => p.name,
+      render: (p) => (
+        <div className="flex items-center gap-3">
+          <div className="h-11 w-11 overflow-hidden rounded-lg bg-surface-2">
+            <ProductImage src={p.imageUrl} alt={p.name} className="h-full w-full object-cover" />
+          </div>
+          <p className="font-medium text-content">{p.name}</p>
+        </div>
+      ),
+    },
+    { key: 'category', header: 'Category', sortValue: (p) => p.category?.name ?? '', render: (p) => <span className="text-muted">{p.category?.name}</span> },
+    { key: 'price', header: 'Price', align: 'right', sortValue: (p) => Number(p.price), render: (p) => <span className="font-mono">{formatPrice(p.price)}</span> },
+    {
+      key: 'actions', header: 'Actions', align: 'right',
+      render: (p) => (
+        <div className="flex justify-end gap-2">
+          <button onClick={() => openEdit(p)} className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-surface-2 text-muted hover:text-primary" aria-label="Edit"><Pencil size={15} /></button>
+          <button onClick={() => askDelete(p)} className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-surface-2 text-muted hover:text-red-500" aria-label="Delete"><Trash2 size={15} /></button>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div>
@@ -74,51 +97,19 @@ export default function ProductManagement() {
         action={<Button onClick={openCreate}><Plus size={16} /> Add product</Button>}
       />
 
-      <div className="overflow-hidden rounded-2xl border border-line bg-surface">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-line text-left font-mono text-xs uppercase tracking-wider text-muted">
-                <th className="px-5 py-3">Product</th>
-                <th className="px-5 py-3">Category</th>
-                <th className="px-5 py-3 text-right">Price</th>
-                <th className="px-5 py-3 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {products?.map((p) => (
-                <tr key={p.id} className="border-b border-line/60 last:border-0 hover:bg-surface-2/50">
-                  <td className="px-5 py-3">
-                    <div className="flex items-center gap-3">
-                      <div className="h-11 w-11 overflow-hidden rounded-lg bg-surface-2">
-                        <ProductImage src={p.imageUrl} alt={p.name} className="h-full w-full object-cover" />
-                      </div>
-                      <p className="font-medium text-content">{p.name}</p>
-                    </div>
-                  </td>
-                  <td className="px-5 py-3 text-muted">{p.category?.name}</td>
-                  <td className="px-5 py-3 text-right font-mono">{formatPrice(p.price)}</td>
-                  <td className="px-5 py-3">
-                    <div className="flex justify-end gap-2">
-                      <button onClick={() => openEdit(p)} className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-surface-2 text-muted hover:text-primary" aria-label="Edit"><Pencil size={15} /></button>
-                      <button onClick={() => askDelete(p)} className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-surface-2 text-muted hover:text-red-500" aria-label="Delete"><Trash2 size={15} /></button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {products?.length === 0 && (
-                <tr><td colSpan={4} className="px-5 py-16 text-center text-muted"><Package size={32} className="mx-auto mb-2 opacity-50" />No products yet.</td></tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <DataTable
+        data={products ?? []}
+        columns={columns}
+        rowKey={(p) => p.id}
+        loading={isLoading}
+        search={(p) => `${p.name} ${p.category?.name ?? ''}`}
+        searchPlaceholder="Search products…"
+        emptyIcon={<Package size={32} />}
+        emptyText="No products yet — add your first one."
+      />
 
       <Modal open={open} onClose={() => setOpen(false)} title={form.id ? 'Edit product' : 'New product'}>
-        <form
-          onSubmit={(e) => { e.preventDefault(); save.mutate(form); }}
-          className="space-y-4"
-        >
+        <form onSubmit={(e) => { e.preventDefault(); save.mutate(form); }} className="space-y-4">
           <Input label="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
           <div>
             <label className="mb-1.5 block text-sm font-medium text-content">Description</label>
