@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import { ENV } from './config/env';
 import { errorHandler, AppError } from './middleware/errorHandler';
@@ -37,6 +38,7 @@ app.use(
 
 app.use(morgan('dev'));
 app.use(express.json({ limit: '1mb' })); // cap request body size
+app.use(cookieParser()); // parse the httpOnly auth cookie
 
 // Throttle authentication endpoints to slow down brute-force attempts.
 const authLimiter = rateLimit({

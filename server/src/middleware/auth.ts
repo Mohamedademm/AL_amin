@@ -17,15 +17,10 @@ export interface AuthRequest extends Request {
  * Middleware to verify JWT token and attach user to the request object.
  */
 export const authenticate = (req: AuthRequest, res: Response, next: NextFunction) => {
+  // Accept the JWT from the httpOnly cookie (preferred) or a Bearer header.
   const authHeader = req.headers.authorization;
-
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({
-      message: 'Authentication token missing or invalid',
-    });
-  }
-
-  const token = authHeader.split(' ')[1];
+  const headerToken = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : undefined;
+  const token = (req as AuthRequest & { cookies?: Record<string, string> }).cookies?.token || headerToken;
 
   if (!token) {
     return res.status(401).json({ message: 'Authentication token missing or invalid' });
