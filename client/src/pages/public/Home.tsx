@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { productApi } from '../../services/api';
 import { ProductCard } from '../../components/common/ProductCard';
+import { ProductCardSkeleton } from '../../components/ui/Skeleton';
 import { Reveal } from '../../components/ui/Reveal';
 import { buttonClasses } from '../../components/ui/Button';
 import heroImg from '../../assets/hero.png';
@@ -30,7 +31,7 @@ const steps = [
 ];
 
 export default function Home() {
-  const { data: products } = useQuery({ queryKey: ['products'], queryFn: productApi.list });
+  const { data: products, isLoading } = useQuery({ queryKey: ['products'], queryFn: productApi.list });
   const featured = products?.slice(0, 8) ?? [];
 
   return (
@@ -139,7 +140,7 @@ export default function Home() {
       </section>
 
       {/* ── Featured products ──────────────────────────────── */}
-      {featured.length > 0 && (
+      {(isLoading || featured.length > 0) && (
         <section className="container-page py-12">
           <div className="flex items-end justify-between">
             <Reveal>
@@ -151,11 +152,13 @@ export default function Home() {
             </Link>
           </div>
           <div className="mt-10 grid grid-cols-2 gap-5 lg:grid-cols-4">
-            {featured.map((p, i) => (
-              <Reveal key={p.id} delay={i * 60}>
-                <ProductCard product={p} />
-              </Reveal>
-            ))}
+            {isLoading
+              ? Array.from({ length: 4 }).map((_, i) => <ProductCardSkeleton key={i} />)
+              : featured.map((p, i) => (
+                  <Reveal key={p.id} delay={i * 60}>
+                    <ProductCard product={p} />
+                  </Reveal>
+                ))}
           </div>
         </section>
       )}
