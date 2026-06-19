@@ -1,7 +1,7 @@
 # Al Amine — Test Report
 
 Snapshot of the testing performed on the platform, how to reproduce it, and the
-results. Last run: **2026-06-19**. Overall: **✅ all green (29 automated tests + checks)**.
+results. Last run: **2026-06-19**. Overall: **✅ all green (32 automated tests + checks)**.
 
 ---
 
@@ -9,7 +9,7 @@ results. Last run: **2026-06-19**. Overall: **✅ all green (29 automated tests 
 
 | # | Type | Tooling | Scope | Result |
 | :- | :-- | :-- | :-- | :-- |
-| 1 | **Backend integration** | `node:test` (built-in) | Full API: auth, RBAC, pricing, orders, inventory, audit, security | **15/15 ✅** |
+| 1 | **Backend integration** | `node:test` (built-in) | Full API: auth, RBAC, pricing, orders, inventory, audit, security | **18/18 ✅** |
 | 2 | **Frontend unit/component** | Vitest + Testing Library (jsdom) | utils, helpers, UI components | **14/14 ✅** |
 | 3 | **Static typing** | `tsc --noEmit` / `tsc -b` | client + server | **0 errors ✅** |
 | 4 | **Production build** | `vite build` / `tsc` | client + server | **Pass ✅** |
@@ -34,8 +34,10 @@ cd server && npx tsc --noEmit
 
 ---
 
-## 3. Backend integration tests (15) — `server/tests/api.test.mjs`
-Validates the live API end-to-end against the seeded database.
+## 3. Backend integration tests (18) — `server/tests/api.test.mjs`
+Validates the live API end-to-end against the seeded database. Also covers
+self-service **profile update / password change**, client **order cancel**
+(owner + state guards), and **dashboard trends** (14-day series).
 
 **Health & security**
 - ✅ `/health` responds 200 OK
@@ -92,5 +94,6 @@ Validates the live API end-to-end against the seeded database.
 - ⬜ Browser **E2E automation** (Playwright) for full user journeys.
 - ⬜ **Coverage reporting** (`vitest --coverage`) + thresholds.
 - ⬜ More component tests (forms, ProductCard with cart context, ProtectedRoute guards).
-- ⬜ **CI** (GitHub Actions): run all suites on every PR.
+- ✅ **CI** (GitHub Actions): client build+tests and server typecheck+integration
+  tests (with a Postgres service) on push/PR — see `.github/workflows/ci.yml`.
 - ⬜ Load/perf testing (k6) on catalog + dashboard endpoints.

@@ -22,7 +22,7 @@ Items checked `[x]` are done; `[~]` in progress.
 ## ⚙️ Functional requirements (new / fixed)
 - [x] **P0** Decrement boutique stock when an order is **ACCEPTED**; reject if insufficient — *done*
 - [ ] **P1** Enforce discount `maxQuantity` (stealth cap) — track usage and auto-disable
-- [ ] **P1** Client order **detail** page + ability to **cancel** a `PENDING` order
+- [x] **P1** Client order **detail** page + ability to **cancel** a `PENDING` order — *done*
 - [ ] **P1** Advanced distribution routing: auto-pick nearest spot with stock (local vs remote ETA)
 - [ ] **P1** Low-stock **alerts** (dashboard banner + optional email)
 - [ ] **P2** Product image **upload** (not just URL) with storage
@@ -34,13 +34,13 @@ Items checked `[x]` are done; `[~]` in progress.
 - [x] **P1** Replace native `confirm()` with a styled confirm dialog (6 call sites) — *done*
 - [x] **P1** Toast notifications for success/error on every admin mutation — *done*
 - [x] **P1** Admin can **create users** (any role) + edit users — *done (User Directory)*
-- [~] **P1** **Search + pagination + sort** on admin tables — *done for Users; products/inventory next*
+- [x] **P1** **Search + pagination + sort** on admin tables — *done (shared DataTable: Users, Products, Inventory, Orders, Audit)*
 - [ ] **P1** Admin **order management** view (currently only staff route) + manual override
 - [ ] **P1** **CSV export** for users, orders, inventory, audit
 - [ ] **P2** Bulk actions (multi-select delete / status change)
 - [ ] **P2** Admin **activity feed** + richer dashboard **charts** (trends over time)
 - [ ] **P2** User detail drawer (orders history, impersonate for support)
-- [ ] **P2** Editable profile (currently read-only)
+- [x] **P2** Editable profile + change password — *done*
 
 ## ⚡ Performance
 - [x] **P1** Route-level **code splitting** (`React.lazy`) for staff/admin bundles — *done*
@@ -52,7 +52,7 @@ Items checked `[x]` are done; `[~]` in progress.
 
 ## 🎨 UX / Polish
 - [ ] **P1** Global toast provider used app-wide (not only admin)
-- [ ] **P2** Skeleton loaders instead of spinners on lists
+- [x] **P2** Skeleton loaders instead of spinners on lists — *done (Skeleton + DataTable + catalog)*
 - [ ] **P2** Form-level validation messages + disabled-until-valid
 - [ ] **P2** Keyboard/focus trap in modals; full a11y pass (axe)
 - [ ] **P2** Empty-state illustrations; 500 error boundary page
@@ -60,7 +60,7 @@ Items checked `[x]` are done; `[~]` in progress.
 ## 🧪 Quality / DevOps
 - [x] **P1** Tests: Vitest (client, 14) + backend integration suite (node:test, 15) — *done*; see [docs/TEST_REPORT.md](docs/TEST_REPORT.md)
 - [ ] **P1** Browser E2E automation (Playwright) + coverage thresholds
-- [ ] **P1** CI (GitHub Actions): typecheck + build + test on PR
+- [x] **P1** CI (GitHub Actions): typecheck + build + test on PR — *done (`.github/workflows/ci.yml`)*
 - [ ] **P2** ESLint/Prettier enforced + pre-commit hook (husky + lint-staged)
 - [ ] **P2** Dockerfile for client + server; full `docker compose` app stack
 - [ ] **P2** Error monitoring (Sentry) + structured logging (pino)
