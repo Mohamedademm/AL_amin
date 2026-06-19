@@ -41,7 +41,7 @@ app.use(express.json({ limit: '1mb' })); // cap request body size
 // Throttle authentication endpoints to slow down brute-force attempts.
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 30,
+  max: Number(process.env.AUTH_RATE_LIMIT_MAX) || 100,
   standardHeaders: true,
   legacyHeaders: false,
   message: { status: 'error', message: 'Too many attempts, please try again later.' },

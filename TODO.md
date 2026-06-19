@@ -58,7 +58,8 @@ Items checked `[x]` are done; `[~]` in progress.
 - [ ] **P2** Empty-state illustrations; 500 error boundary page
 
 ## 🧪 Quality / DevOps
-- [ ] **P1** Tests: Vitest (client) + a backend integration suite (supertest)
+- [x] **P1** Tests: Vitest (client, 14) + backend integration suite (node:test, 15) — *done*; see [docs/TEST_REPORT.md](docs/TEST_REPORT.md)
+- [ ] **P1** Browser E2E automation (Playwright) + coverage thresholds
 - [ ] **P1** CI (GitHub Actions): typecheck + build + test on PR
 - [ ] **P2** ESLint/Prettier enforced + pre-commit hook (husky + lint-staged)
 - [ ] **P2** Dockerfile for client + server; full `docker compose` app stack
