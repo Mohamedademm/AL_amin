@@ -70,7 +70,7 @@ async function main() {
 
   // 2. Vending spots (boutiques) + central warehouse.
   const spots = await Promise.all([
-    prisma.vendingSpot.create({ data: { name: 'Central Warehouse', location: 'Tunis', address: 'Zone Industrielle, Tunis', phone: '+216 71 000 000' } }),
+    prisma.vendingSpot.create({ data: { name: 'Central Warehouse', location: 'Tunis', address: 'Zone Industrielle, Tunis', phone: '+216 71 000 000', isWarehouse: true } }),
     prisma.vendingSpot.create({ data: { name: 'Lac Boutique', location: 'Les Berges du Lac', address: 'Rue du Lac, Tunis', phone: '+216 71 000 111' } }),
     prisma.vendingSpot.create({ data: { name: 'Sousse Spot', location: 'Sousse', address: 'Avenue Habib Bourguiba, Sousse', phone: '+216 73 000 222' } }),
   ]);

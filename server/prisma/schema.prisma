@@ -62,15 +62,16 @@ model Product {
 }
 
 model VendingSpot {
-  id        String    @id @default(uuid())
-  name      String
-  location  String
-  address   String
-  phone     String?
-  inventory Inventory[]
-  orders    Order[]
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  id          String      @id @default(uuid())
+  name        String
+  location    String
+  address     String
+  phone       String?
+  isWarehouse Boolean     @default(false) // the central warehouse (remote fulfilment)
+  inventory   Inventory[]
+  orders      Order[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 }
 
 model Inventory {
@@ -95,6 +96,8 @@ model Order {
   totalAmount  Decimal     @db.Decimal(10, 2)
   address      String
   phone        String
+  fulfilment   String?     // LOCAL (nearest boutique) | REMOTE (central warehouse)
+  etaDays      Int?        // estimated delivery in days (0 = immediate)
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
   items        OrderItem[]

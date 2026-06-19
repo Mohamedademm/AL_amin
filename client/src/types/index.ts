@@ -96,6 +96,8 @@ export interface Order {
   totalAmount: string | number;
   address: string;
   phone: string;
+  fulfilment?: 'LOCAL' | 'REMOTE' | null;
+  etaDays?: number | null;
   createdAt: string;
   items?: OrderItem[];
   spot?: VendingSpot;

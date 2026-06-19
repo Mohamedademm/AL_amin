@@ -158,6 +158,15 @@ test('order pipeline: illegal transition is rejected and stock decrements on acc
   assert.equal(stockAfter, stockBefore - 2, 'accepting an order decrements boutique stock');
 });
 
+test('smart routing assigns a fulfilment + ETA to new orders', async () => {
+  const products = (await call('/api/products')).json.data;
+  const order = await call('/api/orders', { method: 'POST', token: clientToken, body: { items: [{ productId: products[0].id, quantity: 1 }], address: 'A', phone: '+216 0' } });
+  assert.equal(order.status, 201);
+  assert.ok(['LOCAL', 'REMOTE'].includes(order.json.data.fulfilment), 'a fulfilment route is chosen');
+  assert.equal(typeof order.json.data.etaDays, 'number');
+  if (order.json.data.fulfilment === 'LOCAL') assert.equal(order.json.data.etaDays, 0, 'local match is immediate');
+});
+
 test('client can cancel their own PENDING order (and not twice)', async () => {
   const products = (await call('/api/products')).json.data;
   const order = await call('/api/orders', { method: 'POST', token: clientToken, body: { items: [{ productId: products[0].id, quantity: 1 }], address: 'A', phone: '+216 0' } });

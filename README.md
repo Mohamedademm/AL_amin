@@ -129,4 +129,4 @@ expiry/quantity caps are never exposed to clients).
 - [x] Dynamic pricing engine & category/product discounts.
 - [x] Stealth constraints (hidden expiry + quantity caps).
 - [x] Audit logging (discount actions + price changes) with admin viewer.
-- [ ] Advanced distribution routing (next).
+- [x] Advanced distribution routing (local boutique vs central warehouse + ETA).

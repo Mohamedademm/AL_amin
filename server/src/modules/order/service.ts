@@ -22,12 +22,43 @@ export const OrderService = {
     const products = await prisma.product.findMany({ where: { id: { in: productIds } } });
     if (products.length !== productIds.length) throw new AppError('One or more products do not exist', 400);
 
-    // Resolve a fulfillment spot: the requested one, else the first available.
-    let spotId = data.spotId;
-    if (!spotId) {
-      const spot = await prisma.vendingSpot.findFirst();
-      if (!spot) throw new AppError('No vending spot available to fulfill the order', 400);
-      spotId = spot.id;
+    // Smart distribution routing: prefer a boutique that can fulfil the whole
+    // order from stock (LOCAL → immediate); otherwise fall back to the central
+    // warehouse (REMOTE → ~2-day delivery).
+    const spots = await prisma.vendingSpot.findMany({
+      include: { inventory: { where: { productId: { in: productIds } } } },
+    });
+    if (spots.length === 0) throw new AppError('No vending spot available to fulfill the order', 400);
+
+    const need = new Map(data.items.map((i) => [i.productId, i.quantity]));
+    const canFulfill = (spot: (typeof spots)[number]) =>
+      productIds.every((pid) => {
+        const inv = spot.inventory.find((r) => r.productId === pid);
+        return !!inv && inv.quantity >= (need.get(pid) ?? 0);
+      });
+
+    let chosen: (typeof spots)[number];
+    let fulfilment: 'LOCAL' | 'REMOTE';
+    let etaDays: number;
+
+    if (data.spotId) {
+      const requested = spots.find((s) => s.id === data.spotId);
+      if (!requested) throw new AppError('Selected vending spot does not exist', 400);
+      chosen = requested;
+      const local = !requested.isWarehouse && canFulfill(requested);
+      fulfilment = local ? 'LOCAL' : 'REMOTE';
+      etaDays = local ? 0 : 2;
+    } else {
+      const boutique = spots.find((s) => !s.isWarehouse && canFulfill(s));
+      if (boutique) {
+        chosen = boutique;
+        fulfilment = 'LOCAL';
+        etaDays = 0;
+      } else {
+        chosen = spots.find((s) => s.isWarehouse) ?? spots[0]!;
+        fulfilment = 'REMOTE';
+        etaDays = 2;
+      }
     }
 
     // Price each line from the live product price minus any active discount,
@@ -47,11 +78,13 @@ export const OrderService = {
     return prisma.order.create({
       data: {
         clientId,
-        spotId,
+        spotId: chosen.id,
         address: data.address,
         phone: data.phone,
         totalAmount: total,
         status: OrderStatus.PENDING,
+        fulfilment,
+        etaDays,
         items: { create: items },
       },
       include: { items: { include: { product: true } }, spot: true },

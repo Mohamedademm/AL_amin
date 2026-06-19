@@ -1,6 +1,6 @@
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Clock, ShieldCheck, CheckCircle2, XCircle, MapPin, Phone, Store } from 'lucide-react';
+import { ArrowLeft, Clock, ShieldCheck, CheckCircle2, XCircle, MapPin, Phone, Store, Truck, Zap } from 'lucide-react';
 import { orderApi } from '../../services/api';
 import { useConfirm } from '../../context/ConfirmContext';
 import { useToast } from '../../context/ToastContext';
@@ -120,6 +120,15 @@ export default function OrderDetail() {
               <p className="flex items-center gap-2"><MapPin size={15} /> {order.address}</p>
               <p className="flex items-center gap-2"><Phone size={15} /> {order.phone}</p>
             </div>
+            {order.fulfilment && (
+              <div className={cn('mt-4 flex items-center gap-3 rounded-xl border p-3', order.fulfilment === 'LOCAL' ? 'border-primary/30 bg-primary/5 text-primary' : 'border-sky-500/30 bg-sky-500/5 text-sky-500')}>
+                {order.fulfilment === 'LOCAL' ? <Zap size={18} /> : <Truck size={18} />}
+                <div className="text-sm">
+                  <p className="font-semibold">{order.fulfilment === 'LOCAL' ? 'Local match' : 'Remote fulfilment'}</p>
+                  <p className="text-muted">{order.fulfilment === 'LOCAL' ? 'Shipped from the nearest boutique — immediate delivery' : `From the central warehouse — est. ${order.etaDays ?? 2} days`}</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
