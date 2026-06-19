@@ -49,6 +49,7 @@ export const orderApi = {
     unwrap<Order>(http.post('/orders', data)),
   updateStatus: (id: string, status: OrderStatus) =>
     unwrap<Order>(http.patch(`/orders/${id}/status`, { status })),
+  cancel: (id: string) => unwrap<Order>(http.post(`/orders/${id}/cancel`)),
 };
 
 export const inventoryApi = {

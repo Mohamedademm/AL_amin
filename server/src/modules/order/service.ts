@@ -93,6 +93,26 @@ export const OrderService = {
     return order;
   },
 
+  // Cancel a still-PENDING order. The owning client (or any staff) may do this.
+  async cancel(userId: string, role: string, id: string) {
+    const order = await prisma.order.findUnique({ where: { id } });
+    if (!order) throw new AppError('Order not found', 404);
+
+    const isStaff = ['ADMIN', 'MANAGER', 'WORKER'].includes(role);
+    if (!isStaff && order.clientId !== userId) {
+      throw new AppError('Forbidden: you cannot cancel this order', 403);
+    }
+    if (order.status !== 'PENDING') {
+      throw new AppError('Only pending orders can be cancelled', 400);
+    }
+
+    return prisma.order.update({
+      where: { id },
+      data: { status: OrderStatus.REFUSED },
+      include: { items: { include: { product: true } }, spot: true },
+    });
+  },
+
   // Advance an order through the state machine, rejecting illegal jumps.
   // Accepting an order atomically decrements boutique stock (and fails if a
   // line can no longer be fulfilled).

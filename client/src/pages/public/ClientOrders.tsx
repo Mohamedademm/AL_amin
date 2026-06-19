@@ -1,16 +1,33 @@
 import { Link, useSearchParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CheckCircle2, Package, ArrowRight } from 'lucide-react';
 import { orderApi } from '../../services/api';
+import { useConfirm } from '../../context/ConfirmContext';
+import { useToast } from '../../context/ToastContext';
 import { StatusBadge } from '../../components/ui/Badge';
 import { PageLoader } from '../../components/ui/Spinner';
-import { buttonClasses } from '../../components/ui/Button';
+import { Button, buttonClasses } from '../../components/ui/Button';
 import { formatDateTime, formatPrice } from '../../utils/format';
 
 export default function ClientOrders() {
+  const qc = useQueryClient();
+  const confirm = useConfirm();
+  const toast = useToast();
   const { data: orders, isLoading } = useQuery({ queryKey: ['orders'], queryFn: orderApi.list });
   const [params] = useSearchParams();
   const success = params.get('success') === '1';
+
+  const cancel = useMutation({
+    mutationFn: (id: string) => orderApi.cancel(id),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['orders'] }); toast.success('Order cancelled'); },
+    onError: (e: any) => toast.error(e?.response?.data?.message || 'Could not cancel the order'),
+  });
+
+  const askCancel = async (id: string) => {
+    if (await confirm({ title: 'Cancel order', message: 'Cancel this pending order? This cannot be undone.', danger: true, confirmLabel: 'Cancel order' })) {
+      cancel.mutate(id);
+    }
+  };
 
   return (
     <div className="container-page py-12">
@@ -35,7 +52,7 @@ export default function ClientOrders() {
       ) : (
         <div className="mt-8 space-y-4">
           {orders.map((o) => (
-            <div key={o.id} className="rounded-2xl border border-line bg-surface p-5">
+            <div key={o.id} className="rounded-2xl border border-line bg-surface p-5 transition-colors hover:border-primary/30">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="font-mono text-xs text-muted">#{o.id.slice(0, 8).toUpperCase()}</p>
@@ -53,6 +70,16 @@ export default function ClientOrders() {
                 </div>
                 <p className="text-sm text-muted">{o.items?.length ?? 0} item(s) · {o.spot?.name ?? 'Boutique'}</p>
                 <span className="ml-auto font-mono text-lg font-semibold text-content">{formatPrice(o.totalAmount)}</span>
+              </div>
+              <div className="mt-4 flex items-center justify-end gap-3 border-t border-line pt-4">
+                {o.status === 'PENDING' && (
+                  <Button size="sm" variant="ghost" className="text-red-500 hover:bg-red-500/10" disabled={cancel.isPending} onClick={() => askCancel(o.id)}>
+                    Cancel
+                  </Button>
+                )}
+                <Link to={`/orders/${o.id}`} className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:gap-2 transition-all">
+                  View details <ArrowRight size={15} />
+                </Link>
               </div>
             </div>
           ))}

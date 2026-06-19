@@ -139,6 +139,20 @@ test('order pipeline: illegal transition is rejected and stock decrements on acc
   assert.equal(stockAfter, stockBefore - 2, 'accepting an order decrements boutique stock');
 });
 
+test('client can cancel their own PENDING order (and not twice)', async () => {
+  const products = (await call('/api/products')).json.data;
+  const order = await call('/api/orders', { method: 'POST', token: clientToken, body: { items: [{ productId: products[0].id, quantity: 1 }], address: 'A', phone: '+216 0' } });
+  const id = order.json.data.id;
+
+  const cancelled = await call(`/api/orders/${id}/cancel`, { method: 'POST', token: clientToken });
+  assert.equal(cancelled.status, 200);
+  assert.equal(cancelled.json.data.status, 'REFUSED');
+
+  // A non-pending order can no longer be cancelled.
+  const again = await call(`/api/orders/${id}/cancel`, { method: 'POST', token: clientToken });
+  assert.equal(again.status, 400);
+});
+
 test('client only sees their own orders', async () => {
   const r = await call('/api/orders', { token: clientToken });
   assert.equal(r.status, 200);

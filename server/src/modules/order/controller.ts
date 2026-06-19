@@ -45,6 +45,16 @@ export const OrderController = {
     }
   },
 
+  // POST /api/orders/:id/cancel — client (owner) or staff cancels a PENDING order.
+  async cancel(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const order = await OrderService.cancel(req.user!.id, req.user!.role, req.params.id as string);
+      res.json({ status: 'success', data: order });
+    } catch (error) {
+      next(error);
+    }
+  },
+
   // PATCH /api/orders/:id/status — staff move an order along the pipeline.
   async updateStatus(req: AuthRequest, res: Response, next: NextFunction) {
     try {

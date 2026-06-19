@@ -20,6 +20,7 @@ const ProductDetail = lazy(() => import('./pages/public/ProductDetail'));
 const Cart = lazy(() => import('./pages/public/Cart'));
 const Checkout = lazy(() => import('./pages/public/Checkout'));
 const ClientOrders = lazy(() => import('./pages/public/ClientOrders'));
+const OrderDetail = lazy(() => import('./pages/public/OrderDetail'));
 const Profile = lazy(() => import('./pages/public/Profile'));
 const Login = lazy(() => import('./pages/auth/Login'));
 const Register = lazy(() => import('./pages/auth/Register'));
@@ -64,6 +65,7 @@ export default function App() {
                         {/* Authenticated client */}
                         <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
                         <Route path="/orders" element={<ProtectedRoute><ClientOrders /></ProtectedRoute>} />
+                  <Route path="/orders/:id" element={<ProtectedRoute><OrderDetail /></ProtectedRoute>} />
                         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                       </Route>
 
