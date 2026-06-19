@@ -5,6 +5,7 @@ A high-end B2C E-commerce and Distributed Inventory Management System designed f
 ![Project Status](https://img.shields.io/badge/Status-Sprint_3_Complete-success)
 ![Tech Stack](https://img.shields.io/badge/Stack-React_19_|_Node.js_|_Prisma_|_PostgreSQL-10b981)
 ![Theme](https://img.shields.io/badge/UI-Light_%2B_Dark-10b981)
+![Deploy](https://img.shields.io/badge/Deploy-Vercel_%2B_Neon-000000)
 
 ## 🌌 Vision
 Al Amine blends a sophisticated client-facing storefront with a powerful internal management suite. It manages the full lifecycle of a product from the central industry warehouse to various localized vending spots (boutiques), ensuring optimal stock distribution and high-precision order fulfillment.
@@ -34,9 +35,10 @@ Al Amine blends a sophisticated client-facing storefront with a powerful interna
 | **Frontend** | React 19 (TypeScript), Tailwind CSS, React Router, TanStack Query |
 | **Backend** | Node.js, Express 5, TypeScript |
 | **ORM** | Prisma 7 (pg driver adapter) |
-| **Database** | PostgreSQL 16 (Docker) |
+| **Database** | PostgreSQL 16 (Docker locally · Neon in production) |
 | **Security** | JWT authentication + bcrypt + RBAC |
 | **Runtime** | tsx / Vite |
+| **Deployment** | Vercel (static SPA + serverless API) — see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) |
 
 ## 🎨 Visual Identity: Cyber Serif · Surgical Emerald
 A modern, professional design system with full **light + dark mode** (toggle persisted to `localStorage`, system-preference aware, no flash on load).
@@ -113,6 +115,30 @@ All responses use the envelope `{ "status": "success", "data": ... }`. Product
 responses also carry a live `discountPercent` and `discountedPrice` (stealth
 expiry/quantity caps are never exposed to clients).
 
+## ☁️ Deployment (Vercel + Neon)
+
+The app ships as **two Vercel projects** from this single repo, backed by a **Neon**
+serverless PostgreSQL database:
+
+| Project | Root dir | Stack | URL shape |
+| :--- | :--- | :--- | :--- |
+| `al-amin` (frontend) | `client/` | Vite static SPA | `https://al-amin.vercel.app` |
+| `al-amin-api` (backend) | `server/` | Express on serverless functions | `https://al-amin-api.vercel.app` |
+
+The backend Express app is exported from `src/app.ts` and served on Vercel via
+`api/index.ts` (a catch-all rewrite in `vercel.json` keeps every `/api/...` route
+intact). The frontend reads the API base URL from `VITE_API_URL`.
+
+➡️ **Full step-by-step guide: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)** (Neon setup,
+both Vercel imports, env vars, CORS, migrations/seed, troubleshooting).
+
+```bash
+# One-time: apply schema + demo data to Neon (pooled connection string)
+cd server
+export DATABASE_URL="postgresql://...-pooler....neon.tech/neondb?sslmode=require"
+npx prisma migrate deploy && npx tsx prisma/seed.ts
+```
+
 ## 🗺 Roadmap
 
 ### Sprint 1: Foundation ✅
@@ -130,3 +156,9 @@ expiry/quantity caps are never exposed to clients).
 - [x] Stealth constraints (hidden expiry + quantity caps).
 - [x] Audit logging (discount actions + price changes) with admin viewer.
 - [x] Advanced distribution routing (local boutique vs central warehouse + ETA).
+
+### Sprint 4: Cloud Deployment ✅
+- [x] Serverless backend adaptation (`app.ts` + `api/index.ts` + `vercel.json`).
+- [x] Frontend SPA config for Vercel.
+- [x] Neon PostgreSQL (pooled) + production env wiring.
+- [x] Full deployment runbook ([docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)).

@@ -23,16 +23,20 @@ directories are added, removed, or moved.
     - `utils/`: Helpers (`format` for price/date/initials)
   - `public/`: Static assets served as-is (`favicon.svg`)
   - `index.html`, `tailwind.config.js`, `postcss.config.js`, `vite.config.ts`
+  - `vercel.json`: SPA rewrite (all paths → `index.html`) for client-side routing
 - `server/`: Backend (Node + Express 5 + Prisma 7 + PostgreSQL)
   - `src/`
     - `config/`: Env + Prisma client (`database.ts`)
     - `lib/`: Cross-cutting logic (`pricing.ts` — discount engine; `validation.ts` — email/password rules)
     - `middleware/`: `auth` (JWT + RBAC), `errorHandler`
     - `modules/`: Domain modules, each with `routes` / `controller` / `service` (`auth`, `product`, `category`, `order`, `inventory`, `spot`, `user`, `dashboard`, `discount`, `audit`)
-    - `server.ts`: App entry + route mounting
+    - `app.ts`: Builds & exports the configured Express app (no `listen`) — shared by local + serverless
+    - `server.ts`: Local entry — imports `app` and calls `listen`
+  - `api/index.ts`: Vercel serverless function — `export default app`
   - `prisma/`: `schema.prisma`, `migrations/`, `seed.ts`
+  - `vercel.json`: Rewrites every path → `/api/index`; function memory/duration config
   - `.env` / `.env.example`
-- `docs/`: Project documentation (`PROJECT.md` — full knowledge base, `sprint-1-plan.md`)
+- `docs/`: Project documentation (`PROJECT.md` — full knowledge base, `DEPLOYMENT.md` — Vercel+Neon runbook, `PAGE_AUDIT.md`, `TEST_REPORT.md`, `sprint-1-plan.md`)
 - `docker-compose.yml`: PostgreSQL 16 service (host port 5433)
 - `CLAUDE.md`: Project guidelines
 - `TODO.md`: Prioritized improvement roadmap
