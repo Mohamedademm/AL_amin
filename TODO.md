@@ -23,7 +23,7 @@ Items checked `[x]` are done; `[~]` in progress.
 - [x] **P0** Decrement boutique stock when an order is **ACCEPTED**; reject if insufficient — *done*
 - [ ] **P1** Enforce discount `maxQuantity` (stealth cap) — track usage and auto-disable
 - [x] **P1** Client order **detail** page + ability to **cancel** a `PENDING` order — *done*
-- [ ] **P1** Advanced distribution routing: auto-pick nearest spot with stock (local vs remote ETA)
+- [x] **P1** Advanced distribution routing: auto-pick in-stock boutique (LOCAL) vs central warehouse (REMOTE) + ETA — *done*
 - [ ] **P1** Low-stock **alerts** (dashboard banner + optional email)
 - [ ] **P2** Product image **upload** (not just URL) with storage
 - [ ] **P2** Wishlist / favourites for clients

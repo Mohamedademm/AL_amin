@@ -1,7 +1,7 @@
 # Al Amine — Test Report
 
 Snapshot of the testing performed on the platform, how to reproduce it, and the
-results. Last run: **2026-06-19**. Overall: **✅ all green (32 automated tests + checks)**.
+results. Last run: **2026-06-19**. Overall: **✅ all green (33 automated tests + checks)**.
 
 ---
 
@@ -9,7 +9,7 @@ results. Last run: **2026-06-19**. Overall: **✅ all green (32 automated tests 
 
 | # | Type | Tooling | Scope | Result |
 | :- | :-- | :-- | :-- | :-- |
-| 1 | **Backend integration** | `node:test` (built-in) | Full API: auth, RBAC, pricing, orders, inventory, audit, security | **18/18 ✅** |
+| 1 | **Backend integration** | `node:test` (built-in) | Full API: auth, RBAC, pricing, orders, routing, inventory, audit, security | **19/19 ✅** |
 | 2 | **Frontend unit/component** | Vitest + Testing Library (jsdom) | utils, helpers, UI components | **14/14 ✅** |
 | 3 | **Static typing** | `tsc --noEmit` / `tsc -b` | client + server | **0 errors ✅** |
 | 4 | **Production build** | `vite build` / `tsc` | client + server | **Pass ✅** |
@@ -34,7 +34,7 @@ cd server && npx tsc --noEmit
 
 ---
 
-## 3. Backend integration tests (18) — `server/tests/api.test.mjs`
+## 3. Backend integration tests (19) — `server/tests/api.test.mjs`
 Validates the live API end-to-end against the seeded database. Also covers
 self-service **profile update / password change**, client **order cancel**
 (owner + state guards), and **dashboard trends** (14-day series).
