@@ -7,6 +7,7 @@ interface AuthContextValue {
   loading: boolean; // true while restoring the session on first load
   login: (email: string, password: string) => Promise<User>;
   register: (payload: { email: string; password: string; firstName: string; lastName: string; phone?: string }) => Promise<User>;
+  updateProfile: (payload: { firstName?: string; lastName?: string; phone?: string; currentPassword?: string; newPassword?: string }) => Promise<User>;
   logout: () => void;
   isStaff: boolean;
   isAdmin: boolean;
@@ -49,6 +50,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return u;
   };
 
+  const updateProfile = async (payload: { firstName?: string; lastName?: string; phone?: string; currentPassword?: string; newPassword?: string }) => {
+    const updated = await authApi.updateProfile(payload);
+    setUser(updated);
+    return updated;
+  };
+
   const logout = () => {
     localStorage.removeItem('token');
     setUser(null);
@@ -61,6 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading,
         login,
         register,
+        updateProfile,
         logout,
         isStaff: !!user && STAFF_ROLES.includes(user.role),
         isAdmin: user?.role === 'ADMIN',

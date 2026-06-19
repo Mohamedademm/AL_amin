@@ -65,4 +65,29 @@ export const AuthService = {
     if (!user) throw new AppError('User not found', 404);
     return sanitize(user);
   },
+
+  // Self-service profile update; changing the password requires the current one.
+  async updateProfile(
+    userId: string,
+    data: { firstName?: string; lastName?: string; phone?: string; currentPassword?: string; newPassword?: string },
+  ) {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new AppError('User not found', 404);
+
+    const update: { firstName?: string; lastName?: string; phone?: string | null; password?: string } = {};
+    if (data.firstName !== undefined) update.firstName = data.firstName;
+    if (data.lastName !== undefined) update.lastName = data.lastName;
+    if (data.phone !== undefined) update.phone = data.phone || null;
+
+    if (data.newPassword) {
+      if (!data.currentPassword) throw new AppError('Your current password is required', 400);
+      const valid = await bcrypt.compare(data.currentPassword, user.password);
+      if (!valid) throw new AppError('Your current password is incorrect', 401);
+      assertPasswordStrength(data.newPassword);
+      update.password = await bcrypt.hash(data.newPassword, SALT_ROUNDS);
+    }
+
+    const updated = await prisma.user.update({ where: { id: userId }, data: update });
+    return sanitize(updated);
+  },
 };

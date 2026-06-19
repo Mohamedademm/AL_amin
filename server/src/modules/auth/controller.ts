@@ -39,4 +39,14 @@ export const AuthController = {
       next(error);
     }
   },
+
+  // PATCH /api/auth/me — update own profile / change password.
+  async updateMe(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const user = await AuthService.updateProfile(req.user!.id, req.body);
+      res.json({ status: 'success', data: user });
+    } catch (error) {
+      next(error);
+    }
+  },
 };

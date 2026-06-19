@@ -25,6 +25,8 @@ export const authApi = {
   register: (payload: { email: string; password: string; firstName: string; lastName: string; phone?: string }) =>
     unwrap<AuthResult>(http.post('/auth/register', payload)),
   me: () => unwrap<User>(http.get('/auth/me')),
+  updateProfile: (payload: { firstName?: string; lastName?: string; phone?: string; currentPassword?: string; newPassword?: string }) =>
+    unwrap<User>(http.patch('/auth/me', payload)),
 };
 
 export const productApi = {

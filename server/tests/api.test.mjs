@@ -73,6 +73,25 @@ test('auth/me returns the current user', async () => {
   assert.ok(!('password' in r.json.data), 'must never leak the password hash');
 });
 
+test('self profile update: name changes; password change needs the right current one', async () => {
+  const email = `prof${Date.now()}@t.com`;
+  const reg = await call('/api/auth/register', { method: 'POST', body: { email, password: 'Initial123', firstName: 'P', lastName: 'One' } });
+  assert.equal(reg.status, 201);
+  const token = reg.json.data.token;
+
+  const renamed = await call('/api/auth/me', { method: 'PATCH', token, body: { firstName: 'Updated' } });
+  assert.equal(renamed.json.data.firstName, 'Updated');
+
+  const wrong = await call('/api/auth/me', { method: 'PATCH', token, body: { currentPassword: 'nope', newPassword: 'NewPass123' } });
+  assert.equal(wrong.status, 401);
+
+  const ok = await call('/api/auth/me', { method: 'PATCH', token, body: { currentPassword: 'Initial123', newPassword: 'NewPass123' } });
+  assert.equal(ok.status, 200);
+
+  const relog = await call('/api/auth/login', { method: 'POST', body: { email, password: 'NewPass123' } });
+  assert.equal(relog.status, 200, 'can log in with the new password');
+});
+
 // ── RBAC ────────────────────────────────────────────────────────────
 test('protected route without a token returns 401', async () => {
   const r = await call('/api/users');

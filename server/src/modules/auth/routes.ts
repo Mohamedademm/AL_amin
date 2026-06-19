@@ -8,7 +8,8 @@ const router = Router();
 router.post('/register', AuthController.register);
 router.post('/login', AuthController.login);
 
-// Authenticated session endpoint.
+// Authenticated session endpoints.
 router.get('/me', authenticate, AuthController.me);
+router.patch('/me', authenticate, AuthController.updateMe);
 
 export default router;
