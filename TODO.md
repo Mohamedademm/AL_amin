@@ -33,8 +33,9 @@ Items checked `[x]` are done; `[~]` in progress.
 ## 🛠 Admin actions (more powerful)
 - [x] **P1** Replace native `confirm()` with a styled confirm dialog (6 call sites) — *done*
 - [x] **P1** Toast notifications for success/error on every admin mutation — *done*
+- [x] **P1** Admin can **create users** (any role) + edit users — *done (User Directory)*
+- [~] **P1** **Search + pagination + sort** on admin tables — *done for Users; products/inventory next*
 - [ ] **P1** Admin **order management** view (currently only staff route) + manual override
-- [ ] **P1** **Search + pagination + sort** on every admin table (users, products, inventory)
 - [ ] **P1** **CSV export** for users, orders, inventory, audit
 - [ ] **P2** Bulk actions (multi-select delete / status change)
 - [ ] **P2** Admin **activity feed** + richer dashboard **charts** (trends over time)
