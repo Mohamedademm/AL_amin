@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { StatCard } from '../../components/ui/StatCard';
 import { StatusBadge } from '../../components/ui/Badge';
+import { DashboardTrends } from '../../components/dashboard/DashboardTrends';
 import { PageLoader } from '../../components/ui/Spinner';
 import { formatPrice, formatDate } from '../../utils/format';
 import type { OrderStatus } from '../../types';
@@ -29,6 +30,8 @@ export default function StaffDashboard() {
         <StatCard label="Revenue" value={formatPrice(stats.revenue)} icon={<Wallet size={20} />} hint="Accepted orders" />
         <StatCard label="Low stock" value={stats.lowStock} icon={<AlertTriangle size={20} />} tone={stats.lowStock > 0 ? 'amber' : 'primary'} hint="Below 10 units" />
       </div>
+
+      <DashboardTrends />
 
       <div className="mt-6 grid gap-6 lg:grid-cols-5">
         {/* Order pipeline */}

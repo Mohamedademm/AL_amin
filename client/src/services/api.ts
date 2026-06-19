@@ -12,6 +12,7 @@ import type {
   OrderStatus,
   Product,
   Role,
+  TrendPoint,
   User,
   VendingSpot,
 } from '../types';
@@ -79,6 +80,7 @@ export const userApi = {
 
 export const dashboardApi = {
   stats: () => unwrap<DashboardStats>(http.get('/dashboard/stats')),
+  trends: () => unwrap<TrendPoint[]>(http.get('/dashboard/trends')),
 };
 
 export const discountApi = {

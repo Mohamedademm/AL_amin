@@ -191,3 +191,11 @@ test('admin dashboard stats are aggregated', async () => {
   assert.ok(typeof r.json.data.products === 'number');
   assert.ok(r.json.data.orders && typeof r.json.data.orders.total === 'number');
 });
+
+test('dashboard trends return a 14-day daily series', async () => {
+  const r = await call('/api/dashboard/trends', { token: adminToken });
+  assert.equal(r.status, 200);
+  assert.equal(r.json.data.length, 14);
+  const point = r.json.data[0];
+  assert.ok('date' in point && 'orders' in point && 'revenue' in point);
+});

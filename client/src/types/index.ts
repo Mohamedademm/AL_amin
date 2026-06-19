@@ -113,6 +113,12 @@ export interface DashboardStats {
   recentOrders: Array<Order & { client?: { firstName: string; lastName: string } }>;
 }
 
+export interface TrendPoint {
+  date: string;
+  orders: number;
+  revenue: number;
+}
+
 export interface CartItem {
   product: Product;
   quantity: number;

@@ -53,4 +53,33 @@ export const DashboardService = {
       recentOrders,
     };
   },
+
+  // Daily orders + accepted revenue for the last `days` days (for charts).
+  async getTrends(days = 14) {
+    const since = new Date();
+    since.setDate(since.getDate() - (days - 1));
+    since.setHours(0, 0, 0, 0);
+
+    const orders = await prisma.order.findMany({
+      where: { createdAt: { gte: since } },
+      select: { createdAt: true, totalAmount: true, status: true },
+    });
+
+    // Pre-fill one bucket per day so the series has no gaps.
+    const buckets = Array.from({ length: days }, (_, i) => {
+      const d = new Date(since);
+      d.setDate(since.getDate() + i);
+      return { date: d.toISOString().slice(0, 10), orders: 0, revenue: 0 };
+    });
+    const byDate = new Map(buckets.map((b) => [b.date, b]));
+
+    for (const o of orders) {
+      const bucket = byDate.get(o.createdAt.toISOString().slice(0, 10));
+      if (!bucket) continue;
+      bucket.orders += 1;
+      if (o.status === 'ACCEPTED') bucket.revenue += Number(o.totalAmount);
+    }
+
+    return buckets;
+  },
 };

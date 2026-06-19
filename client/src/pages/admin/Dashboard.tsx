@@ -4,6 +4,7 @@ import { dashboardApi } from '../../services/api';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { StatCard } from '../../components/ui/StatCard';
 import { StatusBadge } from '../../components/ui/Badge';
+import { DashboardTrends } from '../../components/dashboard/DashboardTrends';
 import { PageLoader } from '../../components/ui/Spinner';
 import { formatPrice, formatDate } from '../../utils/format';
 import type { OrderStatus } from '../../types';
@@ -32,6 +33,8 @@ export default function AdminDashboard() {
         <StatCard label="Categories" value={stats.categories} icon={<Layers size={20} />} tone="sky" />
         <StatCard label="Low stock" value={stats.lowStock} icon={<AlertTriangle size={20} />} tone={stats.lowStock > 0 ? 'amber' : 'primary'} hint="Below 10 units" />
       </div>
+
+      <DashboardTrends />
 
       <div className="mt-6 grid gap-6 lg:grid-cols-5">
         <div className="rounded-2xl border border-line bg-surface p-6 lg:col-span-2">

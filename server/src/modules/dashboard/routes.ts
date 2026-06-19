@@ -18,4 +18,13 @@ router.get('/stats', async (req: AuthRequest, res: Response, next: NextFunction)
   }
 });
 
+// GET /api/dashboard/trends — daily orders + revenue series for charts.
+router.get('/trends', async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    res.json({ status: 'success', data: await DashboardService.getTrends() });
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default router;
