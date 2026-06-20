@@ -7,6 +7,14 @@ A high-end B2C E-commerce and Distributed Inventory Management System designed f
 ![Theme](https://img.shields.io/badge/UI-Light_%2B_Dark-10b981)
 ![Deploy](https://img.shields.io/badge/Deploy-Vercel_%2B_Neon-000000)
 
+## 🌐 Live Demo
+| App | URL |
+| :-- | :-- |
+| **Storefront + Consoles** | https://al-amin-nine.vercel.app |
+| **API** | https://al-amin-api.vercel.app |
+
+Demo logins (all password **`Password123!`**): `admin@alamine.com` · `manager@alamine.com` · `worker@alamine.com` · `client@alamine.com`.
+
 ## 🌌 Vision
 Al Amine blends a sophisticated client-facing storefront with a powerful internal management suite. It manages the full lifecycle of a product from the central industry warehouse to various localized vending spots (boutiques), ensuring optimal stock distribution and high-precision order fulfillment.
 
@@ -51,34 +59,55 @@ A modern, professional design system with full **light + dark mode** (toggle per
 - **Motion**: scroll-reveal (IntersectionObserver), float/shimmer/pulse ambient animations, weighted cubic-bezier transitions.
 - **Brand**: custom SVG "A" monogram logo with a network node accent.
 
-## 🏁 Getting Started
+## 🏁 Getting Started (clone & run locally)
+
+> **TL;DR** — clone → `npm run install:all` → create the two `.env` files → `npm run dev`.
 
 ### Prerequisites
-- Node.js v20+
-- Docker (for PostgreSQL) — or a local PostgreSQL on port `5433`
+- **Node.js v20+** (and npm)
+- A **PostgreSQL** database. Easiest: a free **Neon** DB (cloud, no install) — the
+  same DB the live demo uses. Alternative: local **Docker** Postgres.
 
-### 1. Database
+### 1. Clone & install
 ```bash
-docker compose up -d   # starts PostgreSQL 16 on host port 5433
+git clone https://github.com/Mohamedademm/AL_amin.git
+cd AL_amin
+npm install            # root tooling (concurrently, husky)
+npm run install:all    # installs client/ and server/ dependencies
 ```
 
-### 2. Server
+### 2. Configure environment
+
+**`server/.env`** — copy the example and set your database URL:
 ```bash
-cd server
-npm install
-cp .env.example .env          # defaults match docker-compose
-npx prisma generate
-npx prisma migrate deploy      # or: npx prisma migrate dev
-npx tsx prisma/seed.ts         # realistic demo data
-npm run dev                    # http://localhost:5000
+cp server/.env.example server/.env
+```
+Then edit `server/.env` and set `DATABASE_URL`:
+- **Option A — Neon (recommended, shared online DB):** paste your connection
+  string from <https://console.neon.tech> (your project → *Connect*). Use the
+  **direct** string (host **without** `-pooler`) for local dev.
+- **Option B — local Docker:** run `docker compose up -d` (Postgres on port 5433),
+  then use `postgresql://user:password@localhost:5433/alamin_db?schema=public`.
+
+**`client/.env`** — point the frontend at your local API:
+```bash
+cp client/.env.example client/.env      # VITE_API_URL=http://localhost:5000/api
 ```
 
-### 3. Client
+### 3. Prepare the database (first time only)
 ```bash
-cd client
-npm install
-npm run dev                    # http://localhost:5173
+npm run db:setup       # prisma generate + migrate deploy + seed demo data
 ```
+> If you use the shared Neon DB that is **already seeded**, you can skip the seed —
+> run only `npm --prefix server run prisma:generate` so the Prisma client exists.
+
+### 4. Run everything
+```bash
+npm run dev            # starts client (http://localhost:5173) + server (http://localhost:5000)
+```
+Open **http://localhost:5173** and log in with a demo account below.
+
+> Prefer two terminals? Use `npm run dev:server` and `npm run dev:client` separately.
 
 ### 🔑 Demo accounts
 All seeded accounts share the password **`Password123!`**:
@@ -89,6 +118,15 @@ All seeded accounts share the password **`Password123!`**:
 | Manager | `manager@alamine.com` |
 | Worker | `worker@alamine.com` |
 | Client | `client@alamine.com` |
+
+### 🧰 Useful root scripts
+| Command | Does |
+| :-- | :-- |
+| `npm run install:all` | Install `client/` + `server/` deps |
+| `npm run dev` | Run client + server together |
+| `npm run build` | Production build of both |
+| `npm run db:setup` | Generate Prisma client, apply migrations, seed |
+| `npm test` | Run client + server test suites |
 
 ## 📡 API Reference (base `/api`)
 

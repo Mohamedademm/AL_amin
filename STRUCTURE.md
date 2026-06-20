@@ -37,7 +37,8 @@ directories are added, removed, or moved.
   - `vercel.json`: Rewrites every path → `/api/index`; function memory/duration config
   - `.env` / `.env.example`
 - `docs/`: Project documentation (`PROJECT.md` — full knowledge base, `DEPLOYMENT.md` — Vercel+Neon runbook, `PAGE_AUDIT.md`, `TEST_REPORT.md`, `sprint-1-plan.md`)
-- `docker-compose.yml`: PostgreSQL 16 service (host port 5433)
+- `package.json` (root): monorepo convenience scripts (`install:all`, `dev`, `build`, `db:setup`, `test`) + husky/lint-staged
+- `docker-compose.yml`: PostgreSQL 16 service (host port 5433) — optional local DB alternative to Neon
 - `CLAUDE.md`: Project guidelines
 - `TODO.md`: Prioritized improvement roadmap
 - `STRUCTURE.md`: This map

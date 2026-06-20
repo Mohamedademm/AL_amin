@@ -1,0 +1,47 @@
+{
+  "name": "al-amin",
+  "version": "1.0.0",
+  "description": "A high-end B2C E-commerce and Distributed Inventory Management System designed for professional operational control, flexible pricing, and smart logistics.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "install:all": "npm install --prefix client && npm install --prefix server",
+    "dev": "concurrently -n client,server -c cyan,green \"npm:dev:client\" \"npm:dev:server\"",
+    "dev:client": "npm --prefix client run dev",
+    "dev:server": "npm --prefix server run dev",
+    "build": "npm --prefix client run build && npm --prefix server run build",
+    "db:setup": "npm --prefix server run prisma:generate && cd server && npx prisma migrate deploy && npx tsx prisma/seed.ts",
+    "test": "npm --prefix client test && npm --prefix server test",
+    "prepare": "husky"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mohamedademm/AL_amin.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Mohamedademm/AL_amin/issues"
+  },
+  "homepage": "https://github.com/Mohamedademm/AL_amin#readme",
+  "lint-staged": {
+    "client/**/*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "server/**/*.{js,ts}": [
+      "prettier --write"
+    ]
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.0",
+    "concurrently": "^9.1.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.7",
+    "prettier": "^3.8.4"
+  }
+}

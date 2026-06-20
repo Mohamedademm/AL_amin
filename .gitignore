@@ -7,6 +7,10 @@ node_modules/
 # Production
 dist/
 build/
+coverage/
+
+# Husky internals
+.husky/_/
 
 # Environment
 .env
