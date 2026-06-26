@@ -1,30 +1,41 @@
-import { Router } from 'express';
-import { Response, NextFunction } from 'express';
-import { DashboardService } from './service';
-import { authenticate, authorize, AuthRequest } from '../../middleware/auth';
+import { Router } from "express";
+import { Response, NextFunction } from "express";
+import { DashboardService } from "./service";
+import { authenticate, authorize, AuthRequest } from "../../middleware/auth";
 
 const router = Router();
 
 // Dashboard metrics are staff-only.
 router.use(authenticate);
-router.use(authorize(['ADMIN', 'MANAGER', 'WORKER']));
+router.use(authorize(["ADMIN", "MANAGER", "WORKER"]));
 
 // GET /api/dashboard/stats — aggregated KPIs for the operations dashboards.
-router.get('/stats', async (req: AuthRequest, res: Response, next: NextFunction) => {
-  try {
-    res.json({ status: 'success', data: await DashboardService.getStats() });
-  } catch (error) {
-    next(error);
-  }
-});
+router.get(
+  "/stats",
+  async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      const stats = await DashboardService.getStats();
+      // Workers should not see revenue data.
+      if (req.user?.role === "WORKER") {
+        stats.revenue = 0;
+      }
+      res.json({ status: "success", data: stats });
+    } catch (error) {
+      next(error);
+    }
+  },
+);
 
 // GET /api/dashboard/trends — daily orders + revenue series for charts.
-router.get('/trends', async (req: AuthRequest, res: Response, next: NextFunction) => {
-  try {
-    res.json({ status: 'success', data: await DashboardService.getTrends() });
-  } catch (error) {
-    next(error);
-  }
-});
+router.get(
+  "/trends",
+  async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      res.json({ status: "success", data: await DashboardService.getTrends() });
+    } catch (error) {
+      next(error);
+    }
+  },
+);
 
 export default router;

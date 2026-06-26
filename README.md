@@ -132,11 +132,13 @@ All seeded accounts share the password **`Password123!`**:
 
 | Method | Endpoint | Access | Description |
 | :--- | :--- | :--- | :--- |
-| POST | `/auth/register` | Public | Create a client account |
-| POST | `/auth/login` | Public | Log in, returns JWT |
+| POST | `/auth/register` | Public | Create a client account (returns JWT + sets cookie) |
+| POST | `/auth/login` | Public | Log in (returns JWT + sets cookie; locks after 10 failed attempts) |
+| POST | `/auth/logout` | Auth | Clear the auth cookie |
 | GET | `/auth/me` | Auth | Current user |
-| GET | `/products` · `/products/:id` | Public | List / get products |
-| POST·PATCH·DELETE | `/products` … | Admin/Manager | Product CRUD |
+| GET | `/auth/google` · `/auth/google/callback` | Public | Google OAuth sign-in (optional, redirects with `?token=`) |
+| GET | `/products` · `/products/:id` | Public | List / get products (incl. `images[]` gallery) |
+| POST·PATCH·DELETE | `/products` … | Admin/Manager | Product CRUD (accepts `multipart/form-data` with up to 5 `images`) |
 | GET | `/categories` | Public | List categories |
 | POST·PATCH·DELETE | `/categories` … | Admin/Manager | Category CRUD |
 | POST·GET | `/orders` | Auth | Place / list orders (clients see own) |

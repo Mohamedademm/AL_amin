@@ -1,79 +1,210 @@
-import { useQuery } from '@tanstack/react-query';
-import { Package, ShoppingBag, Wallet, AlertTriangle, TrendingUp } from 'lucide-react';
-import { dashboardApi } from '../../services/api';
-import { useAuth } from '../../context/AuthContext';
-import { PageHeader } from '../../components/ui/PageHeader';
-import { StatCard } from '../../components/ui/StatCard';
-import { StatusBadge } from '../../components/ui/Badge';
-import { DashboardTrends } from '../../components/dashboard/DashboardTrends';
-import { PageLoader } from '../../components/ui/Spinner';
-import { formatPrice, formatDate } from '../../utils/format';
-import type { OrderStatus } from '../../types';
-
-const statusOrder: OrderStatus[] = ['PENDING', 'VERIFYING', 'ACCEPTED', 'REFUSED'];
+import { useState } from "react";
+import { Mail, Phone, Lock, Save, User } from "lucide-react";
+import { PageHeader } from "../../components/ui/PageHeader";
+import { Button } from "../../components/ui/Button";
+import { Input } from "../../components/ui/Input";
+import { useToast } from "../../context/ToastContext";
+import { useAuth } from "../../context/AuthContext";
+import { initials } from "../../utils/format";
 
 export default function StaffDashboard() {
-  const { user } = useAuth();
-  const { data: stats, isLoading } = useQuery({ queryKey: ['dashboard'], queryFn: dashboardApi.stats });
+  const { user, updateProfile } = useAuth();
+  const toast = useToast();
 
-  if (isLoading || !stats) return <PageLoader label="Loading dashboard" />;
+  const [form, setForm] = useState(() => ({
+    firstName: user?.firstName ?? "",
+    lastName: user?.lastName ?? "",
+    phone: user?.phone ?? "",
+  }));
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [showPwd, setShowPwd] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  const maxStatus = Math.max(...statusOrder.map((s) => stats.orders[s]), 1);
+  const handleSaveProfile = async () => {
+    setSaving(true);
+    try {
+      await updateProfile({
+        firstName: form.firstName,
+        lastName: form.lastName,
+        phone: form.phone || undefined,
+      });
+      toast.success("Profile updated");
+    } catch {
+      toast.error("Could not update profile");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSavePassword = async () => {
+    setSaving(true);
+    try {
+      await updateProfile({
+        currentPassword: passwordForm.currentPassword,
+        newPassword: passwordForm.newPassword,
+      });
+      setPasswordForm({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+      setShowPwd(false);
+      toast.success("Password changed");
+    } catch {
+      toast.error("Could not change password");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
-    <div>
-      <PageHeader title={`Welcome, ${user?.firstName} 👋`} subtitle="Here's what's happening across the network today." />
+    <div className="max-w-2xl">
+      <PageHeader
+        title={`Welcome, ${user?.firstName} 👋`}
+        subtitle="Manage your profile and account settings."
+      />
 
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Products" value={stats.products} icon={<Package size={20} />} hint={`${stats.categories} categories`} />
-        <StatCard label="Total orders" value={stats.orders.total} icon={<ShoppingBag size={20} />} tone="sky" hint={`${stats.orders.PENDING} pending`} />
-        <StatCard label="Revenue" value={formatPrice(stats.revenue)} icon={<Wallet size={20} />} hint="Accepted orders" />
-        <StatCard label="Low stock" value={stats.lowStock} icon={<AlertTriangle size={20} />} tone={stats.lowStock > 0 ? 'amber' : 'primary'} hint="Below 10 units" />
-      </div>
-
-      <DashboardTrends />
-
-      <div className="mt-6 grid gap-6 lg:grid-cols-5">
-        {/* Order pipeline */}
-        <div className="rounded-2xl border border-line bg-surface p-6 lg:col-span-2">
-          <h3 className="flex items-center gap-2 text-lg font-semibold"><TrendingUp size={18} className="text-primary" /> Order pipeline</h3>
-          <div className="mt-6 space-y-4">
-            {statusOrder.map((s) => (
-              <div key={s}>
-                <div className="mb-1.5 flex items-center justify-between text-sm">
-                  <StatusBadge status={s} />
-                  <span className="font-mono font-medium">{stats.orders[s]}</span>
-                </div>
-                <div className="h-2 overflow-hidden rounded-full bg-surface-2">
-                  <div className="h-full rounded-full bg-primary transition-all duration-700" style={{ width: `${(stats.orders[s] / maxStatus) * 100}%` }} />
-                </div>
-              </div>
-            ))}
+      {/* Profile card */}
+      <div className="mb-8 rounded-2xl border border-line bg-surface p-6">
+        <div className="flex items-center gap-4">
+          <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/15 text-xl font-bold text-primary">
+            {initials(user?.firstName, user?.lastName)}
+          </span>
+          <div>
+            <h2 className="text-xl font-bold text-content">
+              {user?.firstName} {user?.lastName}
+            </h2>
+            <p className="flex items-center gap-1.5 text-sm text-muted">
+              <Mail size={14} /> {user?.email}
+            </p>
+            {user?.phone && (
+              <p className="flex items-center gap-1.5 text-sm text-muted">
+                <Phone size={14} /> {user?.phone}
+              </p>
+            )}
           </div>
-        </div>
-
-        {/* Recent orders */}
-        <div className="rounded-2xl border border-line bg-surface p-6 lg:col-span-3">
-          <h3 className="text-lg font-semibold">Recent orders</h3>
-          <div className="mt-4 divide-y divide-line">
-            {stats.recentOrders.length === 0 && <p className="py-6 text-sm text-muted">No orders yet.</p>}
-            {stats.recentOrders.map((o) => (
-              <div key={o.id} className="flex items-center justify-between py-3">
-                <div>
-                  <p className="text-sm font-medium">#{o.id.slice(0, 8).toUpperCase()}</p>
-                  <p className="text-xs text-muted">
-                    {o.client ? `${o.client.firstName} ${o.client.lastName}` : 'Client'} · {formatDate(o.createdAt)}
-                  </p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="font-mono text-sm font-semibold">{formatPrice(o.totalAmount)}</span>
-                  <StatusBadge status={o.status} />
-                </div>
-              </div>
-            ))}
-          </div>
+          <span className="ml-auto rounded-full bg-primary/10 px-3 py-1 font-mono text-xs font-semibold text-primary">
+            {user?.role}
+          </span>
         </div>
       </div>
+
+      {/* Edit profile */}
+      <section className="mb-6 rounded-2xl border border-line bg-surface p-6">
+        <div className="mb-4 flex items-center gap-2">
+          <User size={18} className="text-primary" />
+          <h3 className="font-semibold text-content">My information</h3>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <Input
+            label="First name"
+            value={form.firstName}
+            onChange={(e) => setForm({ ...form, firstName: e.target.value })}
+          />
+          <Input
+            label="Last name"
+            value={form.lastName}
+            onChange={(e) => setForm({ ...form, lastName: e.target.value })}
+          />
+        </div>
+        <div className="mt-3">
+          <Input
+            label="Email"
+            type="email"
+            value={user?.email ?? ""}
+            disabled
+            icon={<Mail size={17} />}
+          />
+        </div>
+        <div className="mt-3">
+          <Input
+            label="Phone"
+            value={form.phone}
+            onChange={(e) => setForm({ ...form, phone: e.target.value })}
+            icon={<Phone size={17} />}
+          />
+        </div>
+        <div className="mt-4 flex justify-end">
+          <Button onClick={handleSaveProfile} disabled={saving}>
+            <Save size={16} /> {saving ? "Saving…" : "Save changes"}
+          </Button>
+        </div>
+      </section>
+
+      {/* Change password */}
+      <section className="rounded-2xl border border-line bg-surface p-6">
+        <div className="mb-4 flex items-center gap-2">
+          <Lock size={18} className="text-primary" />
+          <h3 className="font-semibold text-content">Password</h3>
+        </div>
+        {!showPwd ? (
+          <Button variant="outline" onClick={() => setShowPwd(true)}>
+            <Lock size={16} /> Change password
+          </Button>
+        ) : (
+          <div className="space-y-3">
+            <Input
+              label="Current password"
+              type="password"
+              value={passwordForm.currentPassword}
+              onChange={(e) =>
+                setPasswordForm({
+                  ...passwordForm,
+                  currentPassword: e.target.value,
+                })
+              }
+              placeholder="Enter current password"
+            />
+            <div className="grid grid-cols-2 gap-3">
+              <Input
+                label="New password"
+                type="password"
+                value={passwordForm.newPassword}
+                onChange={(e) =>
+                  setPasswordForm({
+                    ...passwordForm,
+                    newPassword: e.target.value,
+                  })
+                }
+                minLength={8}
+                placeholder="Min 8 chars"
+              />
+              <Input
+                label="Confirm password"
+                type="password"
+                value={passwordForm.confirmPassword}
+                onChange={(e) =>
+                  setPasswordForm({
+                    ...passwordForm,
+                    confirmPassword: e.target.value,
+                  })
+                }
+                minLength={8}
+                placeholder="Repeat password"
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="ghost" onClick={() => setShowPwd(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSavePassword}
+                disabled={
+                  saving ||
+                  !passwordForm.newPassword ||
+                  passwordForm.newPassword !== passwordForm.confirmPassword
+                }
+              >
+                {saving ? "Updating…" : "Update password"}
+              </Button>
+            </div>
+          </div>
+        )}
+      </section>
     </div>
   );
 }

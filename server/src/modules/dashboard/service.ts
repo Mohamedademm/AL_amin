@@ -1,5 +1,5 @@
-import prisma from '../../config/database';
-import { OrderStatus } from '@prisma/client';
+import prisma from "../../config/database";
+import { OrderStatus } from "@prisma/client";
 
 // Threshold below which a stock record is flagged as "low".
 const LOW_STOCK_THRESHOLD = 10;
@@ -21,12 +21,25 @@ export const DashboardService = {
       prisma.category.count(),
       prisma.vendingSpot.count(),
       prisma.user.count(),
-      prisma.order.groupBy({ by: ['status'], _count: { _all: true } }),
-      prisma.order.aggregate({ _sum: { totalAmount: true }, where: { status: OrderStatus.ACCEPTED } }),
-      prisma.inventory.count({ where: { quantity: { lt: LOW_STOCK_THRESHOLD } } }),
+      prisma.order.groupBy({ by: ["status"], _count: { _all: true } }),
+      prisma.order.aggregate({
+        _sum: { totalAmount: true },
+        where: {
+          status: {
+            in: [
+              OrderStatus.ACCEPTED,
+              OrderStatus.SHIPPING,
+              OrderStatus.DELIVERED,
+            ],
+          },
+        },
+      }),
+      prisma.inventory.count({
+        where: { quantity: { lt: LOW_STOCK_THRESHOLD } },
+      }),
       prisma.order.findMany({
         take: 6,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         include: { client: { select: { firstName: true, lastName: true } } },
       }),
     ]);
@@ -36,9 +49,12 @@ export const DashboardService = {
       PENDING: 0,
       VERIFYING: 0,
       ACCEPTED: 0,
+      SHIPPING: 0,
+      DELIVERED: 0,
       REFUSED: 0,
     };
-    for (const row of ordersByStatus) statusCounts[row.status] = row._count._all;
+    for (const row of ordersByStatus)
+      statusCounts[row.status] = row._count._all;
 
     const totalOrders = Object.values(statusCounts).reduce((a, b) => a + b, 0);
 
@@ -77,7 +93,7 @@ export const DashboardService = {
       const bucket = byDate.get(o.createdAt.toISOString().slice(0, 10));
       if (!bucket) continue;
       bucket.orders += 1;
-      if (o.status === 'ACCEPTED') bucket.revenue += Number(o.totalAmount);
+      if (o.status === "ACCEPTED") bucket.revenue += Number(o.totalAmount);
     }
 
     return buckets;

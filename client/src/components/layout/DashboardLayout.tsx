@@ -1,15 +1,27 @@
-import { useState } from 'react';
-import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { useState } from "react";
+import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
-  LayoutDashboard, ShoppingBag, Boxes, Package, Users, UserCog,
-  Settings, Store, Menu, X, LogOut, Tag, ScrollText,
-} from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
-import { Logo, LogoMark } from '../brand/Logo';
-import { ThemeToggle } from '../ui/ThemeToggle';
-import { cn } from '../../lib/cn';
-import { initials } from '../../utils/format';
-import type { ReactNode } from 'react';
+  LayoutDashboard,
+  ShoppingBag,
+  Boxes,
+  Package,
+  Users,
+  UserCog,
+  Settings,
+  Store,
+  Menu,
+  X,
+  LogOut,
+  Tag,
+  ScrollText,
+  Layers,
+} from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
+import { Logo, LogoMark } from "../brand/Logo";
+import { ThemeToggle } from "../ui/ThemeToggle";
+import { cn } from "../../lib/cn";
+import { initials } from "../../utils/format";
+import type { ReactNode } from "react";
 
 interface NavItem {
   to: string;
@@ -17,20 +29,40 @@ interface NavItem {
   icon: ReactNode;
 }
 
-const operationsNav: NavItem[] = [
-  { to: '/staff/dashboard', label: 'Dashboard', icon: <LayoutDashboard size={18} /> },
-  { to: '/staff/orders', label: 'Orders', icon: <ShoppingBag size={18} /> },
-  { to: '/staff/inventory', label: 'Inventory', icon: <Boxes size={18} /> },
-  { to: '/staff/products', label: 'Products', icon: <Package size={18} /> },
-];
+const operationsNav = (isWorker: boolean): NavItem[] => {
+  const items: NavItem[] = [
+    {
+      to: "/staff/dashboard",
+      label: "Dashboard",
+      icon: <LayoutDashboard size={18} />,
+    },
+    { to: "/staff/orders", label: "Orders", icon: <ShoppingBag size={18} /> },
+  ];
+  if (!isWorker) {
+    items.push(
+      { to: "/staff/inventory", label: "Inventory", icon: <Boxes size={18} /> },
+      { to: "/staff/products", label: "Products", icon: <Package size={18} /> },
+      {
+        to: "/staff/categories",
+        label: "Categories",
+        icon: <Layers size={18} />,
+      },
+    );
+  }
+  return items;
+};
 
 const adminNav: NavItem[] = [
-  { to: '/admin/dashboard', label: 'Overview', icon: <LayoutDashboard size={18} /> },
-  { to: '/admin/users', label: 'Users', icon: <Users size={18} /> },
-  { to: '/admin/staff', label: 'Staff', icon: <UserCog size={18} /> },
-  { to: '/admin/pricing', label: 'Pricing', icon: <Tag size={18} /> },
-  { to: '/admin/audit', label: 'Audit Log', icon: <ScrollText size={18} /> },
-  { to: '/admin/settings', label: 'Settings', icon: <Settings size={18} /> },
+  {
+    to: "/admin/dashboard",
+    label: "Overview",
+    icon: <LayoutDashboard size={18} />,
+  },
+  { to: "/admin/users", label: "Users", icon: <Users size={18} /> },
+  { to: "/admin/staff", label: "Staff", icon: <UserCog size={18} /> },
+  { to: "/admin/pricing", label: "Pricing", icon: <Tag size={18} /> },
+  { to: "/admin/audit", label: "Audit Log", icon: <ScrollText size={18} /> },
+  { to: "/admin/settings", label: "Settings", icon: <Settings size={18} /> },
 ];
 
 // Shared operations shell (sidebar + topbar) used by staff and admin areas.
@@ -41,7 +73,7 @@ export default function DashboardLayout() {
 
   const handleLogout = () => {
     logout();
-    navigate('/');
+    navigate("/");
   };
 
   const sidebar = (
@@ -50,14 +82,28 @@ export default function DashboardLayout() {
         <Link to="/" onClick={() => setOpen(false)}>
           <Logo size={32} />
         </Link>
-        <button className="lg:hidden" onClick={() => setOpen(false)} aria-label="Close menu">
+        <button
+          className="lg:hidden"
+          onClick={() => setOpen(false)}
+          aria-label="Close menu"
+        >
           <X size={20} className="text-muted" />
         </button>
       </div>
 
       <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-6">
-        <NavGroup title="Operations" items={operationsNav} onNavigate={() => setOpen(false)} />
-        {isAdmin && <NavGroup title="Administration" items={adminNav} onNavigate={() => setOpen(false)} />}
+        <NavGroup
+          title="Operations"
+          items={operationsNav(user?.role === "WORKER")}
+          onNavigate={() => setOpen(false)}
+        />
+        {isAdmin && (
+          <NavGroup
+            title="Administration"
+            items={adminNav}
+            onNavigate={() => setOpen(false)}
+          />
+        )}
       </nav>
 
       <div className="border-t border-line p-3">
@@ -88,7 +134,10 @@ export default function DashboardLayout() {
       {/* Mobile drawer */}
       {open && (
         <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setOpen(false)} />
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setOpen(false)}
+          />
           <aside className="absolute inset-y-0 left-0 w-64 animate-fade-in border-r border-line bg-surface">
             {sidebar}
           </aside>
@@ -106,9 +155,11 @@ export default function DashboardLayout() {
             >
               <Menu size={18} />
             </button>
-            <span className="lg:hidden"><LogoMark size={30} /></span>
+            <span className="lg:hidden">
+              <LogoMark size={30} />
+            </span>
             <p className="hidden font-mono text-xs uppercase tracking-[0.18em] text-muted sm:block">
-              {isAdmin ? 'Administration Console' : 'Operations Console'}
+              {isAdmin ? "Administration Console" : "Operations Console"}
             </p>
           </div>
 
@@ -119,8 +170,12 @@ export default function DashboardLayout() {
                 {initials(user?.firstName, user?.lastName)}
               </span>
               <div className="hidden leading-tight sm:block">
-                <p className="text-xs font-semibold text-content">{user?.firstName} {user?.lastName}</p>
-                <p className="font-mono text-[9px] uppercase tracking-widest text-primary">{user?.role}</p>
+                <p className="text-xs font-semibold text-content">
+                  {user?.firstName} {user?.lastName}
+                </p>
+                <p className="font-mono text-[9px] uppercase tracking-widest text-primary">
+                  {user?.role}
+                </p>
               </div>
             </div>
           </div>
@@ -135,10 +190,20 @@ export default function DashboardLayout() {
 }
 
 // Renders a labelled group of sidebar links.
-function NavGroup({ title, items, onNavigate }: { title: string; items: NavItem[]; onNavigate: () => void }) {
+function NavGroup({
+  title,
+  items,
+  onNavigate,
+}: {
+  title: string;
+  items: NavItem[];
+  onNavigate: () => void;
+}) {
   return (
     <div>
-      <p className="px-3 pb-2 font-mono text-[10px] uppercase tracking-[0.2em] text-muted">{title}</p>
+      <p className="px-3 pb-2 font-mono text-[10px] uppercase tracking-[0.2em] text-muted">
+        {title}
+      </p>
       <div className="space-y-1">
         {items.map((item) => (
           <NavLink
@@ -147,10 +212,10 @@ function NavGroup({ title, items, onNavigate }: { title: string; items: NavItem[
             onClick={onNavigate}
             className={({ isActive }) =>
               cn(
-                'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all',
+                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
                 isActive
-                  ? 'bg-primary/10 text-primary shadow-[inset_0_0_0_1px_rgba(16,185,129,0.2)]'
-                  : 'text-muted hover:bg-surface-2 hover:text-content',
+                  ? "bg-primary/10 text-primary shadow-[inset_0_0_0_1px_rgba(16,185,129,0.2)]"
+                  : "text-muted hover:bg-surface-2 hover:text-content",
               )
             }
           >

@@ -31,7 +31,7 @@ The project follows the "Cyber Serif" design system. This blends classical edito
 **Design Tokens:**
 - **Colors:**
   - Background: `#050505`
-  - Accent: `#10b981` (Surgical accent)
+  - Accent: `#972c83` (Magenta accent) + `#f58f8a` (Coral)
   - Text: `#EBEBEB`
 - **Typography:**
   - Headlines: `Newsreader` (Serif, stark styling, tight tracking)

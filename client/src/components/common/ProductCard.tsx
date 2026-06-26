@@ -1,11 +1,11 @@
-import { Link } from 'react-router-dom';
-import { Plus, Check } from 'lucide-react';
-import { useState } from 'react';
-import type { Product } from '../../types';
-import { useCart } from '../../context/CartContext';
-import { ProductImage } from './ProductImage';
-import { Badge } from '../ui/Badge';
-import { formatPrice } from '../../utils/format';
+import { Link } from "react-router-dom";
+import { Check, SprayCan as Spray } from "lucide-react";
+import { useState } from "react";
+import type { Product } from "../../types";
+import { useCart } from "../../context/CartContext";
+import { ProductImage } from "./ProductImage";
+import { Badge } from "../ui/Badge";
+import { formatPrice } from "../../utils/format";
 
 // Storefront product tile with image, category, price and quick add-to-cart.
 export function ProductCard({ product }: { product: Product }) {
@@ -43,15 +43,21 @@ export function ProductCard({ product }: { product: Product }) {
       </div>
 
       <div className="flex flex-1 flex-col p-4">
-        <h3 className="line-clamp-1 font-medium text-content">{product.name}</h3>
-        <p className="mt-1 line-clamp-2 flex-1 text-sm text-muted">{product.description}</p>
+        <h3 className="line-clamp-1 font-medium text-content">
+          {product.name}
+        </h3>
+        <p className="mt-1 line-clamp-2 flex-1 text-sm text-muted">
+          {product.description}
+        </p>
         <div className="mt-4 flex items-center justify-between">
           <span className="flex items-baseline gap-1.5">
             <span className="font-mono text-lg font-semibold text-content">
               {formatPrice(product.discountedPrice ?? product.price)}
             </span>
             {!!product.discountPercent && (
-              <span className="font-mono text-xs text-muted line-through">{formatPrice(product.price)}</span>
+              <span className="font-mono text-xs text-muted line-through">
+                {formatPrice(product.price)}
+              </span>
             )}
           </span>
           <button
@@ -59,7 +65,7 @@ export function ProductCard({ product }: { product: Product }) {
             aria-label="Add to cart"
             className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary transition-all hover:bg-primary hover:text-primary-contrast"
           >
-            {added ? <Check size={17} /> : <Plus size={17} />}
+            {added ? <Check size={17} /> : <Spray size={16} />}
           </button>
         </div>
       </div>

@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* ----------------------------------------------------------------------------
-   Surgical Emerald — design tokens (RGB channel triplets for alpha support)
+   Design tokens (RGB channel triplets for alpha support)
 ---------------------------------------------------------------------------- */
 @layer base {
   :root {
@@ -13,8 +13,8 @@
     --content: 15 23 42;          /* slate-900 */
     --muted: 100 116 139;         /* slate-500 */
     --line: 226 232 240;          /* slate-200 */
-    --primary: 16 185 129;        /* emerald-500 */
-    --primary-strong: 5 150 105;  /* emerald-600 */
+    --primary: 151 44 131;        /* magenta #972c83 */
+    --primary-strong: 122 34 105; /* darker magenta */
     --primary-contrast: 255 255 255;
     color-scheme: light;
   }
@@ -26,8 +26,8 @@
     --content: 235 235 235;       /* #EBEBEB */
     --muted: 148 163 184;         /* slate-400 */
     --line: 39 39 42;             /* zinc-800 */
-    --primary: 16 185 129;        /* emerald-500 */
-    --primary-strong: 52 211 153; /* emerald-400 */
+    --primary: 151 44 131;        /* magenta #972c83 */
+    --primary-strong: 180 60 160; /* lighter magenta for dark mode */
     --primary-contrast: 5 12 9;
     color-scheme: dark;
   }
@@ -57,7 +57,7 @@
   }
 
   ::selection {
-    background: rgb(var(--primary) / 0.25);
+    background: rgba(151, 44, 131, 0.2);
   }
 
   /* Themed scrollbar */
@@ -104,22 +104,83 @@
 ---------------------------------------------------------------------------- */
 @layer utilities {
   .text-gradient {
-    @apply bg-gradient-to-r from-primary to-emerald-300 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-[#972c83] to-[#f58f8a] bg-clip-text text-transparent;
   }
 
   .container-page {
     @apply mx-auto w-full max-w-7xl px-5 sm:px-6 lg:px-8;
   }
 
-  /* Ambient emerald spotlight used behind hero sections */
+  /* Flashing promo marquee */
+  .marquee-container {
+    mask-image: linear-gradient(90deg, transparent, black 5%, black 95%, transparent);
+    -webkit-mask-image: linear-gradient(90deg, transparent, black 5%, black 95%, transparent);
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .marquee-track {
+    display: inline-flex;
+    animation: marquee-scroll 20s linear infinite;
+  }
+
+  @keyframes marquee-scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  /* Thin custom scrollbar for horizontal scroll */
+  .scrollbar-thin::-webkit-scrollbar {
+    height: 4px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: rgba(151,44,131,0.3);
+    border-radius: 9999px;
+  }
+
+  /* Fade-in-up for sections */
+  .animate-fade-in-up {
+    animation: fadeInUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes fadeInUp {
+    0% { opacity: 0; transform: translateY(24px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Pulse glow for CTAs */
+  .pulse-magenta {
+    animation: pulseMagenta 3s ease-in-out infinite;
+  }
+  @keyframes pulseMagenta {
+    0%, 100% { box-shadow: 0 0 16px rgba(151,44,131,0.3); }
+    50% { box-shadow: 0 0 32px rgba(151,44,131,0.6); }
+  }
+
+  /* Ambient magenta-coral spotlight used behind hero sections */
   .spotlight {
     background:
-      radial-gradient(60% 50% at 50% 0%, rgb(var(--primary) / 0.12) 0%, transparent 70%),
-      radial-gradient(40% 40% at 100% 10%, rgb(var(--primary) / 0.08) 0%, transparent 60%);
+      radial-gradient(60% 50% at 50% 0%, rgba(151, 44, 131, 0.12) 0%, transparent 70%),
+      radial-gradient(40% 40% at 100% 10%, rgba(245, 143, 138, 0.08) 0%, transparent 60%);
+  }
+
+  .spotlight-magenta {
+    background:
+      radial-gradient(60% 50% at 50% 0%, rgba(151, 44, 131, 0.12) 0%, transparent 70%),
+      radial-gradient(40% 40% at 100% 10%, rgba(245, 143, 138, 0.08) 0%, transparent 60%);
+  }
+
+  .text-gradient-magenta {
+    background: linear-gradient(135deg, #972c83, #f58f8a);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
   .shimmer-line {
-    background: linear-gradient(90deg, transparent, rgb(var(--primary) / 0.6), transparent);
+    background: linear-gradient(90deg, transparent, rgba(151, 44, 131, 0.6), transparent);
     background-size: 200% 100%;
     animation: shimmer 3s infinite linear;
   }

@@ -16,22 +16,22 @@ directories are added, removed, or moved.
     - `context/`: Global providers — `ThemeContext` (light/dark), `AuthContext` (session), `CartContext`, `ToastContext` (notifications), `ConfirmContext` (dialog)
     - `hooks/`: Custom hooks (`useInView` for scroll reveals)
     - `lib/`: Tiny utilities (`cn` classnames helper)
-    - `pages/`: Route components by area — `public/`, `auth/`, `staff/`, `admin/`
+    - `pages/`: Route components by area — `public/`, `auth/` (incl. `GoogleCallback`), `staff/` (incl. `CategoryManagement`), `admin/`
     - `routes/`: Route guards (`ProtectedRoute`)
-    - `services/`: API layer — `axios` instance + typed `api` functions
+    - `services/`: API layer — `axios` instance (Bearer JWT) + typed `api` functions (product image upload via multipart)
     - `types/`: Shared TypeScript domain types
     - `utils/`: Helpers (`format` for price/date/initials)
-  - `public/`: Static assets served as-is (`favicon.svg`)
+  - `public/`: Static assets served as-is (`favicon.svg`, `logo.png`)
   - `index.html`, `tailwind.config.js`, `postcss.config.js`, `vite.config.ts`
   - `vercel.json`: SPA rewrite (all paths → `index.html`) for client-side routing
 - `server/`: Backend (Node + Express 5 + Prisma 7 + PostgreSQL)
   - `src/`
-    - `config/`: Env + Prisma client (`database.ts`)
-    - `lib/`: Cross-cutting logic (`pricing.ts` — discount engine; `validation.ts` — email/password rules)
-    - `middleware/`: `auth` (JWT + RBAC), `errorHandler`
-    - `modules/`: Domain modules, each with `routes` / `controller` / `service` (`auth`, `product`, `category`, `order`, `inventory`, `spot`, `user`, `dashboard`, `discount`, `audit`)
-    - `app.ts`: Builds & exports the configured Express app (no `listen`) — shared by local + serverless
-    - `server.ts`: Local entry — imports `app` and calls `listen`
+    - `config/`: Env + Prisma client + Google OAuth (passport) + Multer file upload (`database.ts`, `env.ts`, `passport.ts`, `upload.ts`)
+    - `lib/`: Cross-cutting logic (`pricing.ts` — discount engine; `validation.ts` — Zod schemas + `validate` middleware + email/password rules)
+    - `middleware/`: `auth` (JWT via cookie or Bearer + RBAC), `errorHandler`
+    - `modules/`: Domain modules, each with `routes` / `controller` / `service` (`auth`, `product`, `category`, `order`, `inventory`, `spot`, `user`, `dashboard`, `discount`, `audit`; `order` also has `cleanup.ts` — interval-based order expiry, started by the local server only)
+    - `app.ts`: Builds & exports the configured Express app (no `listen`) — shared by local + serverless; mounts passport + `/uploads` static
+    - `server.ts`: Local entry — imports `app`, starts the cleanup interval, calls `listen`
   - `api/index.ts`: Vercel serverless function — `export default app`
   - `prisma/`: `schema.prisma`, `migrations/`, `seed.ts`
   - `vercel.json`: Rewrites every path → `/api/index`; function memory/duration config

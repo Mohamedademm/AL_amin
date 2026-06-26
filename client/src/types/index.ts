@@ -1,8 +1,14 @@
 // Shared domain types mirroring the backend Prisma schema + API envelopes.
 
-export type Role = 'ADMIN' | 'MANAGER' | 'WORKER' | 'CLIENT';
+export type Role = "ADMIN" | "MANAGER" | "WORKER" | "CLIENT";
 
-export type OrderStatus = 'PENDING' | 'VERIFYING' | 'ACCEPTED' | 'REFUSED';
+export type OrderStatus =
+  | "PENDING"
+  | "VERIFYING"
+  | "ACCEPTED"
+  | "SHIPPING"
+  | "DELIVERED"
+  | "REFUSED";
 
 export interface User {
   id: string;
@@ -29,13 +35,14 @@ export interface Product {
   categoryId: string;
   category?: Category;
   imageUrl?: string | null;
+  images?: { id: string; url: string; sortOrder: number }[];
   createdAt?: string;
   // Live pricing computed by the API from active discounts.
   discountPercent?: number;
   discountedPrice?: number;
 }
 
-export type DiscountScope = 'CATEGORY' | 'PRODUCT';
+export type DiscountScope = "CATEGORY" | "PRODUCT";
 
 export interface Discount {
   id: string;
@@ -96,12 +103,12 @@ export interface Order {
   totalAmount: string | number;
   address: string;
   phone: string;
-  fulfilment?: 'LOCAL' | 'REMOTE' | null;
+  fulfilment?: "LOCAL" | "REMOTE" | null;
   etaDays?: number | null;
   createdAt: string;
   items?: OrderItem[];
   spot?: VendingSpot;
-  client?: Pick<User, 'id' | 'firstName' | 'lastName' | 'email'>;
+  client?: Pick<User, "id" | "firstName" | "lastName" | "email">;
 }
 
 export interface DashboardStats {
@@ -109,10 +116,20 @@ export interface DashboardStats {
   categories: number;
   spots: number;
   users: number;
-  orders: { total: number; PENDING: number; VERIFYING: number; ACCEPTED: number; REFUSED: number };
+  orders: {
+    total: number;
+    PENDING: number;
+    VERIFYING: number;
+    ACCEPTED: number;
+    SHIPPING: number;
+    DELIVERED: number;
+    REFUSED: number;
+  };
   revenue: string | number;
   lowStock: number;
-  recentOrders: Array<Order & { client?: { firstName: string; lastName: string } }>;
+  recentOrders: Array<
+    Order & { client?: { firstName: string; lastName: string } }
+  >;
 }
 
 export interface TrendPoint {

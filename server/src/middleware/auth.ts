@@ -1,38 +1,59 @@
-import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
-import { ENV } from '../config/env';
+import { Request, Response, NextFunction } from "express";
+import jwt from "jsonwebtoken";
+import { ENV } from "../config/env";
+
+// Teach Express/Passport what shape our user has so AuthRequest stays compatible.
+declare global {
+  namespace Express {
+    interface User {
+      id: string;
+      email: string;
+      role: string;
+    }
+  }
+}
 
 /**
  * Custom Request interface to include user information after authentication.
  */
 export interface AuthRequest extends Request {
-  user?: {
-    id: string;
-    email: string;
-    role: string;
-  };
+  user?: Express.User;
 }
 
 /**
  * Middleware to verify JWT token and attach user to the request object.
  */
-export const authenticate = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const authenticate = (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) => {
   // Accept the JWT from the httpOnly cookie (preferred) or a Bearer header.
   const authHeader = req.headers.authorization;
-  const headerToken = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : undefined;
-  const token = (req as AuthRequest & { cookies?: Record<string, string> }).cookies?.token || headerToken;
+  const headerToken = authHeader?.startsWith("Bearer ")
+    ? authHeader.split(" ")[1]
+    : undefined;
+  const token =
+    (req as AuthRequest & { cookies?: Record<string, string> }).cookies
+      ?.token || headerToken;
 
   if (!token) {
-    return res.status(401).json({ message: 'Authentication token missing or invalid' });
+    return res
+      .status(401)
+      .json({ message: "Authentication token missing or invalid" });
   }
 
   try {
-    const decoded = jwt.verify(token, ENV.JWT_SECRET) as unknown as { id: string; email: string; role: string };
+    const decoded = jwt.verify(token, ENV.JWT_SECRET) as unknown as {
+      id: string;
+      email: string;
+      role: string;
+    };
     req.user = decoded;
     next();
   } catch (error) {
     return res.status(401).json({
-      message: 'Invalid or expired authentication token',
+      message: "Invalid or expired authentication token",
     });
   }
 };
@@ -44,7 +65,9 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
 export const authorize = (allowedRoles: string[]) => {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!req.user) {
-      return res.status(401).json({ message: 'Unauthorized: No user session found' });
+      return res
+        .status(401)
+        .json({ message: "Unauthorized: No user session found" });
     }
 
     if (!allowedRoles.includes(req.user.role)) {

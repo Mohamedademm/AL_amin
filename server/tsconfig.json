@@ -25,7 +25,6 @@
     // Disabled: Express's req.params index signature makes every param
     // `string | undefined` under this flag, which the controllers don't guard.
     "noUncheckedIndexedAccess": false,
-    "exactOptionalPropertyTypes": true,
 
     // Style Options
     // "noImplicitReturns": true,
