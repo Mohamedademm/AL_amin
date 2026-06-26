@@ -1,7 +1,7 @@
-import prisma from '../../config/database';
-import { ProductCreateInput, ProductUpdateInput } from './types';
-import { getActiveDiscounts, attachPricing } from '../../lib/pricing';
-import { AuditService } from '../audit/service';
+import prisma from "../../config/database";
+import { ProductCreateInput, ProductUpdateInput } from "./types";
+import { getActiveDiscounts, attachPricing } from "../../lib/pricing";
+import { AuditService } from "../audit/service";
 
 /**
  * Service handling business logic for Products.
@@ -12,7 +12,10 @@ export const ProductService = {
    */
   async getAll() {
     const [products, discounts] = await Promise.all([
-      prisma.product.findMany({ include: { category: true }, orderBy: { name: 'asc' } }),
+      prisma.product.findMany({
+        include: { category: true },
+        orderBy: { name: "asc" },
+      }),
       getActiveDiscounts(),
     ]);
     return products.map((p) => attachPricing(p, discounts));
@@ -44,11 +47,16 @@ export const ProductService = {
     const updated = await prisma.product.update({ where: { id }, data });
 
     // Audit price changes for full administrative transparency.
-    if (userId && existing && data.price !== undefined && Number(existing.price) !== Number(updated.price)) {
+    if (
+      userId &&
+      existing &&
+      data.price !== undefined &&
+      Number(existing.price) !== Number(updated.price)
+    ) {
       await AuditService.log({
         userId,
-        action: 'UPDATE_PRICE',
-        entity: 'Product',
+        action: "UPDATE_PRICE",
+        entity: "Product",
         entityId: id,
         oldValue: String(existing.price),
         newValue: String(updated.price),
@@ -62,6 +70,11 @@ export const ProductService = {
    * Deletes a product.
    */
   async delete(id: string) {
-    return prisma.product.delete({ where: { id } });
+    return prisma.$transaction([
+      prisma.inventory.deleteMany({ where: { productId: id } }),
+      prisma.discount.deleteMany({ where: { productId: id } }),
+      prisma.orderItem.deleteMany({ where: { productId: id } }),
+      prisma.product.delete({ where: { id } }),
+    ]);
   },
 };

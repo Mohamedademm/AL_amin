@@ -127,6 +127,25 @@ test('a category discount lowers the effective product price', async () => {
   }
 });
 
+test('product deletion succeeds even if it has inventory/discounts (cascade)', async () => {
+  const catRes = await call('/api/categories', { method: 'POST', token: adminToken, body: { name: 'DeleteTestCat' + Date.now() } });
+  const categoryId = catRes.json.data.id;
+  
+  const prodRes = await call('/api/products', { method: 'POST', token: adminToken, body: { name: 'DeleteTestProd', price: 100, categoryId } });
+  const productId = prodRes.json.data.id;
+
+  const spots = (await call('/api/spots', { token: adminToken })).json.data;
+  await call('/api/inventory', { method: 'PUT', token: adminToken, body: { productId, spotId: spots[0].id, quantity: 10 } });
+
+  await call('/api/discounts', { method: 'POST', token: adminToken, body: { percentage: 10, scope: 'PRODUCT', productId } });
+
+  const delRes = await call(`/api/products/${productId}`, { method: 'DELETE', token: adminToken });
+  assert.equal(delRes.status, 204, 'product deletion should succeed and return 204 No Content');
+
+  const getRes = await call(`/api/products/${productId}`);
+  assert.equal(getRes.status, 404, 'product should no longer be found');
+});
+
 // ── Orders: state machine + inventory integrity ─────────────────────
 test('order pipeline: illegal transition is rejected and stock decrements on accept', async () => {
   const products = (await call('/api/products')).json.data;

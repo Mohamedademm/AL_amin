@@ -30,7 +30,6 @@
   "homepage": "https://github.com/Mohamedademm/AL_amin#readme",
   "lint-staged": {
     "client/**/*.{js,jsx,ts,tsx}": [
-      "eslint --fix",
       "prettier --write"
     ],
     "server/**/*.{js,ts}": [

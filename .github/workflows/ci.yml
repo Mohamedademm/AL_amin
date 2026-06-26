@@ -21,7 +21,7 @@ jobs:
           cache-dependency-path: client/package-lock.json
       - run: npm ci
       - run: npm run build
-      - run: npm test
+      - run: npm run test:coverage
 
   server:
     name: Server (typecheck · integration tests)
@@ -67,3 +67,5 @@ jobs:
             sleep 1
           done
           npm test
+      - name: Run k6 load test
+        run: docker run --rm -i --network host -v ${{ github.workspace }}/server/tests/load/k6-50users.js:/k6.js grafana/k6 run /k6.js
