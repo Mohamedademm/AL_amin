@@ -8,7 +8,7 @@
     "start": "node dist/server.js",
     "postinstall": "prisma generate",
     "build:api": "esbuild src/app.ts --bundle --platform=node --format=cjs --packages=external --outfile=dist/app.cjs",
-    "vercel-build": "node -e \"require('fs').rmSync('node_modules/.prisma/client',{recursive:true,force:true})\" && prisma generate && npm run build:api",
+    "vercel-build": "prisma generate && npm run build:api",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "tsx prisma/seed.ts",

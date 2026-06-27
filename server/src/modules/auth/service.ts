@@ -4,7 +4,7 @@ import prisma from "../../config/database";
 import { ENV } from "../../config/env";
 import { AppError } from "../../middleware/errorHandler";
 import { RegisterInput, LoginInput, JwtPayload } from "./types";
-import { RoleName, User } from "@prisma/client";
+import { RoleName, User } from "../../generated/prisma";
 import { assertEmail, assertPasswordStrength } from "../../lib/validation";
 
 // Number of bcrypt salt rounds — 10 is the standard cost/perf trade-off.

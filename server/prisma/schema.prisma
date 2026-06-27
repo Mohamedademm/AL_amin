@@ -1,5 +1,6 @@
 generator client {
   provider      = "prisma-client-js"
+  output        = "../src/generated/prisma"
   // "native" for local dev; "rhel-openssl-3.0.x" for the Vercel/AWS Lambda runtime.
   binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }

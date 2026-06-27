@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import prisma from "./database";
 import { ENV } from "./env";
-import { RoleName } from "@prisma/client";
+import { RoleName } from "../generated/prisma";
 
 // Serialize user id into the session (not used with JWT, but passport needs it).
 passport.serializeUser((user: any, done) => done(null, user.id));

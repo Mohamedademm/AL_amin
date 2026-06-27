@@ -1,7 +1,7 @@
 import prisma from "../../config/database";
 import { AppError } from "../../middleware/errorHandler";
 import { OrderCreateInput } from "./types";
-import { OrderStatus, Prisma } from "@prisma/client";
+import { OrderStatus, Prisma } from "../../generated/prisma";
 import { getActiveDiscounts, discountPercentFor } from "../../lib/pricing";
 
 // Allowed status transitions enforcing the order state machine.

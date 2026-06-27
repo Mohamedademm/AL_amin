@@ -1,5 +1,5 @@
 import prisma from "../../config/database";
-import { OrderStatus } from "@prisma/client";
+import { OrderStatus } from "../../generated/prisma";
 
 // Threshold below which a stock record is flagged as "low".
 const LOW_STOCK_THRESHOLD = 10;

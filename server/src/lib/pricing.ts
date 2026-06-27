@@ -1,5 +1,5 @@
 import prisma from '../config/database';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '../generated/prisma';
 
 // Minimal shape of a discount needed to compute an effective price.
 interface DiscountRule {

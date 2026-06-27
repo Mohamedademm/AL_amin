@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { UserService } from './service';
-import { RoleName } from '@prisma/client';
+import { RoleName } from '../../generated/prisma';
 
 export const UserController = {
   // GET /api/users — list users, optional ?role= filter.

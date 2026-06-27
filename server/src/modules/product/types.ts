@@ -1,4 +1,4 @@
-import { Product } from '@prisma/client';
+import { Product } from '../../generated/prisma';
 
 export interface ProductCreateInput {
   name: string;

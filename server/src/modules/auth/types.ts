@@ -1,4 +1,4 @@
-import { RoleName } from '@prisma/client';
+import { RoleName } from '../../generated/prisma';
 
 // Payload accepted when a new client account self-registers.
 export interface RegisterInput {

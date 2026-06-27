@@ -2,7 +2,7 @@ import { Response, NextFunction } from "express";
 import { OrderService } from "./service";
 import { AppError } from "../../middleware/errorHandler";
 import { AuthRequest } from "../../middleware/auth";
-import { OrderStatus } from "@prisma/client";
+import { OrderStatus } from "../../generated/prisma";
 import prisma from "../../config/database";
 
 // Roles considered "staff" (internal operators) for order management.

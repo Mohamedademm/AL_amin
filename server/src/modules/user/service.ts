@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import prisma from "../../config/database";
 import { AppError } from "../../middleware/errorHandler";
-import { RoleName, Prisma } from "@prisma/client";
+import { RoleName, Prisma } from "../../generated/prisma";
 import { assertEmail, assertPasswordStrength } from "../../lib/validation";
 
 // Fields safe to expose for any user record (never the password hash).
