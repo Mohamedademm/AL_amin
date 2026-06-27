@@ -185,51 +185,7 @@ async function main() {
 
   const password = await bcrypt.hash(DEMO_PASSWORD, 10);
 
-  // 1. Users across every role.
-  const [admin, , , client] = await Promise.all([
-    prisma.user.create({
-      data: {
-        email: "admin@alamine.com",
-        password,
-        firstName: "System",
-        lastName: "Admin",
-        role: "ADMIN",
-        phone: "+216 20 000 001",
-      },
-    }),
-    prisma.user.create({
-      data: {
-        email: "manager@alamine.com",
-        password,
-        firstName: "Mona",
-        lastName: "Manager",
-        role: "MANAGER",
-        phone: "+216 20 000 002",
-      },
-    }),
-    prisma.user.create({
-      data: {
-        email: "worker@alamine.com",
-        password,
-        firstName: "Walid",
-        lastName: "Worker",
-        role: "WORKER",
-        phone: "+216 20 000 003",
-      },
-    }),
-    prisma.user.create({
-      data: {
-        email: "client@alamine.com",
-        password,
-        firstName: "Sami",
-        lastName: "Client",
-        role: "CLIENT",
-        phone: "+216 20 000 004",
-      },
-    }),
-  ]);
-
-  // 2. Vending spots (boutiques) + central warehouse.
+  // 1. Vending spots (boutiques) + central warehouse.
   const spots = await Promise.all([
     prisma.vendingSpot.create({
       data: {
@@ -254,6 +210,52 @@ async function main() {
         location: "Sousse",
         address: "Avenue Habib Bourguiba, Sousse",
         phone: "+216 73 000 222",
+      },
+    }),
+  ]);
+
+  // 2. Users across every role. Staff are assigned to their vending spot.
+  const [admin, , , client] = await Promise.all([
+    prisma.user.create({
+      data: {
+        email: "admin@alamine.com",
+        password,
+        firstName: "System",
+        lastName: "Admin",
+        role: "ADMIN",
+        phone: "+216 20 000 001",
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: "manager@alamine.com",
+        password,
+        firstName: "Mona",
+        lastName: "Manager",
+        role: "MANAGER",
+        phone: "+216 20 000 002",
+        assignedSpotId: spots[0].id, // Central Warehouse
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: "worker@alamine.com",
+        password,
+        firstName: "Walid",
+        lastName: "Worker",
+        role: "WORKER",
+        phone: "+216 20 000 003",
+        assignedSpotId: spots[1].id, // Lac Boutique
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: "client@alamine.com",
+        password,
+        firstName: "Sami",
+        lastName: "Client",
+        role: "CLIENT",
+        phone: "+216 20 000 004",
       },
     }),
   ]);

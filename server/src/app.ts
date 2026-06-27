@@ -8,6 +8,7 @@ import path from "path";
 import { ENV } from "./config/env";
 import { errorHandler, AppError } from "./middleware/errorHandler";
 import passport from "./config/passport";
+import { ctx } from "./lib/requestContext";
 
 import authRoutes from "./modules/auth/routes";
 import productRoutes from "./modules/product/routes";
@@ -52,6 +53,10 @@ app.use(morgan("dev"));
 app.use(express.json({ limit: "1mb" })); // cap request body size
 app.use(cookieParser()); // parse the httpOnly auth cookie
 app.use(passport.initialize()); // Google OAuth strategy
+
+// Create an AsyncLocalStorage context for every request so the Prisma audit
+// middleware can access the authenticated user's ID set by `authenticate`.
+app.use((_req, _res, next) => ctx.run({ userId: "" }, next));
 
 // Serve uploaded product images as static assets (local dev; on Vercel the
 // filesystem is read-only so uploads are local-only — the seed uses CDN URLs).

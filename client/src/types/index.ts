@@ -19,6 +19,7 @@ export interface User {
   role: Role;
   status: string;
   createdAt: string;
+  assignedSpotId?: string | null;
 }
 
 export interface Category {

@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, X, ShieldCheck, PackageOpen, Truck } from "lucide-react";
 import { orderApi } from "../../services/api";
-import { useAuth } from "../../context/AuthContext";
 import { PageHeader } from "../../components/ui/PageHeader";
 import { StatusBadge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
@@ -12,7 +11,7 @@ import { cn } from "../../lib/cn";
 import { formatDateTime, formatPrice } from "../../utils/format";
 import type { Order, OrderStatus } from "../../types";
 
-const allFilters: (OrderStatus | "ALL")[] = [
+const filters: (OrderStatus | "ALL")[] = [
   "ALL",
   "PENDING",
   "VERIFYING",
@@ -21,18 +20,10 @@ const allFilters: (OrderStatus | "ALL")[] = [
   "DELIVERED",
   "REFUSED",
 ];
-const workerFilters: (OrderStatus | "ALL")[] = [
-  "ALL",
-  "PENDING",
-  "SHIPPING",
-  "REFUSED",
-];
 
 export default function StaffOrders() {
   const qc = useQueryClient();
   const toast = useToast();
-  const { user } = useAuth();
-  const isWorker = user?.role === "WORKER";
   const { data: orders, isLoading } = useQuery({
     queryKey: ["all-orders"],
     queryFn: orderApi.list,
@@ -70,19 +61,15 @@ export default function StaffOrders() {
         </div>
       ),
     },
-    ...(isWorker
-      ? []
-      : [
-          {
-            key: "client" as const,
-            header: "Client" as const,
-            sortValue: (o: Order) => o.client?.lastName ?? "",
-            render: (o: Order) =>
-              o.client
-                ? `${o.client.firstName} ${o.client.lastName}`
-                : "Client",
-          },
-        ]),
+    {
+      key: "client" as const,
+      header: "Client" as const,
+      sortValue: (o: Order) => o.client?.lastName ?? "",
+      render: (o: Order) =>
+        o.client
+          ? `${o.client.firstName} ${o.client.lastName}`
+          : "Client",
+    },
     {
       key: "details",
       header: "Details",
@@ -117,47 +104,25 @@ export default function StaffOrders() {
         if (o.status === "PENDING") {
           return (
             <div className="flex justify-end gap-2">
-              {isWorker ? (
-                <>
-                  <Button
-                    size="sm"
-                    disabled={busy}
-                    onClick={() => act(o.id, "SHIPPING")}
-                  >
-                    <Check size={15} /> Accept
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="danger"
-                    disabled={busy}
-                    onClick={() => act(o.id, "REFUSED")}
-                  >
-                    <X size={15} />
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button
-                    size="sm"
-                    disabled={busy}
-                    onClick={() => act(o.id, "VERIFYING")}
-                  >
-                    <ShieldCheck size={15} /> Verify
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="danger"
-                    disabled={busy}
-                    onClick={() => act(o.id, "REFUSED")}
-                  >
-                    <X size={15} />
-                  </Button>
-                </>
-              )}
+              <Button
+                size="sm"
+                disabled={busy}
+                onClick={() => act(o.id, "VERIFYING")}
+              >
+                <ShieldCheck size={15} /> Verify
+              </Button>
+              <Button
+                size="sm"
+                variant="danger"
+                disabled={busy}
+                onClick={() => act(o.id, "REFUSED")}
+              >
+                <X size={15} />
+              </Button>
             </div>
           );
         }
-        if (o.status === "VERIFYING" && !isWorker) {
+        if (o.status === "VERIFYING") {
           return (
             <div className="flex justify-end gap-2">
               <Button
@@ -178,27 +143,29 @@ export default function StaffOrders() {
             </div>
           );
         }
-        if ((o.status === "ACCEPTED" || o.status === "SHIPPING") && !isWorker) {
+        if (o.status === "ACCEPTED") {
           return (
             <div className="flex justify-end gap-2">
-              {o.status === "ACCEPTED" && (
-                <Button
-                  size="sm"
-                  disabled={busy}
-                  onClick={() => act(o.id, "SHIPPING")}
-                >
-                  <Truck size={15} /> Ship
-                </Button>
-              )}
-              {o.status === "SHIPPING" && (
-                <Button
-                  size="sm"
-                  disabled={busy}
-                  onClick={() => act(o.id, "DELIVERED")}
-                >
-                  <Check size={15} /> Deliver
-                </Button>
-              )}
+              <Button
+                size="sm"
+                disabled={busy}
+                onClick={() => act(o.id, "SHIPPING")}
+              >
+                <Truck size={15} /> Ship
+              </Button>
+            </div>
+          );
+        }
+        if (o.status === "SHIPPING") {
+          return (
+            <div className="flex justify-end gap-2">
+              <Button
+                size="sm"
+                disabled={busy}
+                onClick={() => act(o.id, "DELIVERED")}
+              >
+                <Check size={15} /> Deliver
+              </Button>
             </div>
           );
         }
@@ -207,7 +174,6 @@ export default function StaffOrders() {
     },
   ];
 
-  const filters = isWorker ? workerFilters : allFilters;
   const data = (orders ?? []).filter(
     (o) => filter === "ALL" || o.status === filter,
   );
@@ -216,11 +182,7 @@ export default function StaffOrders() {
     <div>
       <PageHeader
         title="Order Management"
-        subtitle={
-          isWorker
-            ? "Accept or refuse incoming customer orders."
-            : "Verify, accept or refuse incoming customer orders."
-        }
+        subtitle="Verify, accept, ship and deliver incoming customer orders."
       />
 
       <DataTable

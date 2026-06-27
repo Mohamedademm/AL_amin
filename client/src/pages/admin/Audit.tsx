@@ -11,6 +11,9 @@ import type { AuditEntry } from "../../types";
 const tone = (
   action: string,
 ): "success" | "amber" | "red" | "sky" | "neutral" => {
+  if (action === "CREATE") return "success";
+  if (action === "DELETE") return "red";
+  if (action === "UPDATE") return "amber";
   if (action.includes("APPLIED") || action.includes("ENABLED"))
     return "success";
   if (action.includes("REMOVED") || action.includes("DISABLED")) return "red";
@@ -78,7 +81,7 @@ export default function Audit() {
     <div>
       <PageHeader
         title="Audit Trail"
-        subtitle="Every price change and discount action, recorded for full transparency."
+        subtitle="Every database change tracked automatically — products, orders, users, inventory, discounts, and more."
       />
       <DataTable
         data={entries ?? []}

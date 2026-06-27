@@ -87,6 +87,7 @@ export const createUserSchema = z.object({
   lastName: z.string().min(1).max(100),
   phone: z.string().max(20).optional().nullable(),
   role: roleSchema,
+  assignedSpotId: z.string().uuid().optional().nullable(),
 });
 
 export const updateUserSchema = z.object({
@@ -96,6 +97,7 @@ export const updateUserSchema = z.object({
   phone: z.string().max(20).optional().nullable(),
   role: roleSchema.optional(),
   status: z.enum(["ACTIVE", "DISABLED"]).optional(),
+  assignedSpotId: z.string().uuid().optional().nullable(),
 });
 
 // ─── Products ────────────────────────────────────────────────────

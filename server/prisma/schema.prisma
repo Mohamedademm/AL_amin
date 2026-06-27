@@ -25,18 +25,20 @@ enum OrderStatus {
 }
 
 model User {
-  id             String    @id @default(uuid())
-  email          String    @unique
+  id             String       @id @default(uuid())
+  email          String       @unique
   password       String
   firstName      String
   lastName       String
   phone          String?
-  status         String    @default("ACTIVE")
-  role           RoleName  @default(CLIENT)
-  failedAttempts Int       @default(0)
+  status         String       @default("ACTIVE")
+  role           RoleName     @default(CLIENT)
+  failedAttempts Int          @default(0)
   lockedUntil    DateTime?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  assignedSpotId String?
+  assignedSpot   VendingSpot? @relation("AssignedStaff", fields: [assignedSpotId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
   orders        Order[]
   auditLogs      AuditLog[]
   eventsCreated  Event[]
@@ -84,9 +86,10 @@ model VendingSpot {
   address     String
   phone       String?
   isWarehouse Boolean     @default(false) // the central warehouse (remote fulfilment)
-  inventory   Inventory[]
-  orders      Order[]
-  createdAt   DateTime    @default(now())
+  inventory      Inventory[]
+  orders         Order[]
+  assignedStaff  User[]       @relation("AssignedStaff")
+  createdAt      DateTime     @default(now())
   updatedAt   DateTime    @updatedAt
 }
 

@@ -2,7 +2,6 @@ import prisma from "../../config/database";
 import { AppError } from "../../middleware/errorHandler";
 import { ProductCreateInput, ProductUpdateInput } from "./types";
 import { getActiveDiscounts, attachPricing } from "../../lib/pricing";
-import { AuditService } from "../audit/service";
 
 /**
  * Service handling business logic for Products.
@@ -40,6 +39,12 @@ export const ProductService = {
    * Creates a new product with optional gallery images.
    */
   async create(data: ProductCreateInput, imageUrls: string[] = []) {
+    if (!data || !data.name) {
+      throw new AppError(
+        `ProductService.create received invalid data: ${JSON.stringify(data)}`,
+        500,
+      );
+    }
     return prisma.product.create({
       data: {
         ...data,
@@ -58,10 +63,8 @@ export const ProductService = {
     id: string,
     data: ProductUpdateInput,
     newImageUrls: string[] = [],
-    userId?: string,
+    _userId?: string,
   ) {
-    const existing = await prisma.product.findUnique({ where: { id } });
-
     const updated = await prisma.product.update({
       where: { id },
       data: {
@@ -78,23 +81,6 @@ export const ProductService = {
       },
       include: { images: { orderBy: { sortOrder: "asc" } } },
     });
-
-    // Audit price changes for full administrative transparency.
-    if (
-      userId &&
-      existing &&
-      data.price !== undefined &&
-      Number(existing.price) !== Number(updated.price)
-    ) {
-      await AuditService.log({
-        userId,
-        action: "UPDATE_PRICE",
-        entity: "Product",
-        entityId: id,
-        oldValue: String(existing.price),
-        newValue: String(updated.price),
-      });
-    }
 
     return updated;
   },

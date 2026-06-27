@@ -50,6 +50,20 @@ export const ProductController = {
   async create(req: Request, res: Response, next: NextFunction) {
     try {
       const urls = imageUrlsFromFiles(req.files as Express.Multer.File[]);
+
+      if (!req.body || typeof req.body !== "object") {
+        throw new AppError(
+          `Invalid request body: expected an object, got ${typeof req.body}`,
+          400,
+        );
+      }
+      if (!req.body.name) {
+        throw new AppError(
+          `Product name is required. Received body: ${JSON.stringify(req.body)}`,
+          400,
+        );
+      }
+
       const data: ProductCreateInput = {
         name: String(req.body.name),
         description: req.body.description || undefined,

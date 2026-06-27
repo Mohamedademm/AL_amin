@@ -136,6 +136,7 @@ export const userApi = {
     lastName: string;
     role: Role;
     phone?: string;
+    assignedSpotId?: string | null;
   }) => unwrap<User>(http.post("/users", data)),
   update: (id: string, data: Partial<User> & { password?: string }) =>
     unwrap<User>(http.patch(`/users/${id}`, data)),

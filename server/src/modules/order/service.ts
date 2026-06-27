@@ -112,8 +112,10 @@ export const OrderService = {
   },
 
   // List every order in the system (staff/admin view).
-  async listAll() {
+  // Non-admin staff with an assigned spot only see orders for that spot.
+  async listAll(assignedSpotId?: string | null) {
     return prisma.order.findMany({
+      where: assignedSpotId ? { spotId: assignedSpotId } : {},
       include: {
         items: { include: { product: true } },
         spot: true,

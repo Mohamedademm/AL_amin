@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { ENV } from "../config/env";
+import { ctx } from "../lib/requestContext";
 
 // Teach Express/Passport what shape our user has so AuthRequest stays compatible.
 declare global {
@@ -50,6 +51,9 @@ export const authenticate = (
       role: string;
     };
     req.user = decoded;
+    // Set the user in the async context so the Prisma audit middleware can tag entries.
+    const store = ctx.getStore();
+    if (store) store.userId = decoded.id;
     next();
   } catch (error) {
     return res.status(401).json({

@@ -14,6 +14,7 @@ const SAFE_SELECT = {
   role: true,
   status: true,
   createdAt: true,
+  assignedSpotId: true,
 } satisfies Prisma.UserSelect;
 
 interface StaffInput {
@@ -23,6 +24,7 @@ interface StaffInput {
   lastName: string;
   phone?: string;
   role: RoleName;
+  assignedSpotId?: string;
 }
 
 export const UserService = {
@@ -66,12 +68,13 @@ export const UserService = {
         lastName: data.lastName,
         phone: data.phone ?? null,
         role: data.role,
+        assignedSpotId: data.assignedSpotId ?? null,
       },
       select: SAFE_SELECT,
     });
   },
 
-  // Update a user's role, status, or profile fields — only whitelisted fields accepted.
+  // Update a user's role, status, profile fields, or assigned spot.
   async update(
     id: string,
     data: Partial<Omit<StaffInput, "password">> & { status?: string },
@@ -83,6 +86,7 @@ export const UserService = {
     if (data.email !== undefined) allowed.email = data.email;
     if (data.role !== undefined) allowed.role = data.role;
     if (data.status !== undefined) allowed.status = data.status;
+    if (data.assignedSpotId !== undefined) allowed.assignedSpotId = data.assignedSpotId;
     return prisma.user.update({
       where: { id },
       data: allowed,

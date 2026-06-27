@@ -3,6 +3,7 @@ import { OrderService } from "./service";
 import { AppError } from "../../middleware/errorHandler";
 import { AuthRequest } from "../../middleware/auth";
 import { OrderStatus } from "@prisma/client";
+import prisma from "../../config/database";
 
 // Roles considered "staff" (internal operators) for order management.
 const STAFF_ROLES = ["ADMIN", "MANAGER", "WORKER"];
@@ -18,12 +19,21 @@ export const OrderController = {
     }
   },
 
-  // GET /api/orders — staff see all orders, clients see only their own.
+  // GET /api/orders — staff see all orders (filtered by assigned spot for non-admin),
+  // clients see only their own.
   async list(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const isStaff = STAFF_ROLES.includes(req.user!.role);
+      let assignedSpotId: string | null | undefined;
+      if (isStaff && req.user!.role !== "ADMIN") {
+        const user = await prisma.user.findUnique({
+          where: { id: req.user!.id },
+          select: { assignedSpotId: true },
+        });
+        assignedSpotId = user?.assignedSpotId;
+      }
       const orders = isStaff
-        ? await OrderService.listAll()
+        ? await OrderService.listAll(assignedSpotId)
         : await OrderService.listForClient(req.user!.id);
       res.json({ status: "success", data: orders });
     } catch (error) {
