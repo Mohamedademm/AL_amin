@@ -77,7 +77,7 @@ export const UserService = {
   // Update a user's role, status, profile fields, or assigned spot.
   async update(
     id: string,
-    data: Partial<Omit<StaffInput, "password">> & { status?: string },
+    data: Partial<StaffInput> & { status?: string },
   ) {
     const allowed: Record<string, unknown> = {};
     if (data.firstName !== undefined) allowed.firstName = data.firstName;
@@ -87,6 +87,7 @@ export const UserService = {
     if (data.role !== undefined) allowed.role = data.role;
     if (data.status !== undefined) allowed.status = data.status;
     if (data.assignedSpotId !== undefined) allowed.assignedSpotId = data.assignedSpotId;
+    if (data.password) allowed.password = await bcrypt.hash(data.password, 10);
     return prisma.user.update({
       where: { id },
       data: allowed,

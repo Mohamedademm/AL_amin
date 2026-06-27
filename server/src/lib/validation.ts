@@ -98,6 +98,12 @@ export const updateUserSchema = z.object({
   role: roleSchema.optional(),
   status: z.enum(["ACTIVE", "DISABLED"]).optional(),
   assignedSpotId: z.string().uuid().optional().nullable(),
+  password: z
+    .string()
+    .min(8)
+    .regex(/[A-Za-z]/)
+    .regex(/[0-9]/)
+    .optional(),
 });
 
 // ─── Products ────────────────────────────────────────────────────
