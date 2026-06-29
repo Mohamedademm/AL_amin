@@ -58,6 +58,7 @@ const adminNav: NavItem[] = [
     label: "Overview",
     icon: <LayoutDashboard size={18} />,
   },
+  { to: "/admin/orders", label: "Orders", icon: <ShoppingBag size={18} /> },
   { to: "/admin/users", label: "Users", icon: <Users size={18} /> },
   { to: "/admin/staff", label: "Staff", icon: <UserCog size={18} /> },
   { to: "/admin/pricing", label: "Pricing", icon: <Tag size={18} /> },

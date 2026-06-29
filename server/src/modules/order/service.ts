@@ -2,7 +2,7 @@ import prisma from "../../config/database";
 import { AppError } from "../../middleware/errorHandler";
 import { OrderCreateInput } from "./types";
 import { OrderStatus, Prisma } from "../../generated/prisma";
-import { getActiveDiscounts, discountPercentFor } from "../../lib/pricing";
+import { getActiveDiscounts, discountFor } from "../../lib/pricing";
 
 // Allowed status transitions enforcing the order state machine.
 const TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
@@ -75,30 +75,70 @@ export const OrderService = {
     const discounts = await getActiveDiscounts();
     const productMap = new Map(products.map((p) => [p.id, p]));
     let total = new Prisma.Decimal(0);
+
+    // Track how many units each discount covers so we can increment usage atomically.
+    const discountUsageDelta = new Map<string, number>();
     const items = data.items.map((i) => {
       if (i.quantity <= 0)
         throw new AppError("Quantity must be greater than zero", 400);
       const product = productMap.get(i.productId)!;
-      const percent = discountPercentFor(product, discounts);
+      const { percentage, discountId } = discountFor(product, discounts);
       const price =
-        percent > 0 ? product.price.mul(100 - percent).div(100) : product.price;
+        percentage > 0
+          ? product.price.mul(100 - percentage).div(100)
+          : product.price;
       total = total.add(price.mul(i.quantity));
+      if (discountId) {
+        discountUsageDelta.set(
+          discountId,
+          (discountUsageDelta.get(discountId) ?? 0) + i.quantity,
+        );
+      }
       return { productId: i.productId, quantity: i.quantity, price };
     });
 
-    return prisma.order.create({
-      data: {
-        clientId,
-        spotId: chosen.id,
-        address: data.address,
-        phone: data.phone,
-        totalAmount: total,
-        status: OrderStatus.PENDING,
-        fulfilment,
-        etaDays,
-        items: { create: items },
-      },
-      include: { items: { include: { product: true } }, spot: true },
+    return prisma.$transaction(async (tx) => {
+      const order = await tx.order.create({
+        data: {
+          clientId,
+          spotId: chosen.id,
+          address: data.address,
+          phone: data.phone,
+          totalAmount: total,
+          status: OrderStatus.PENDING,
+          fulfilment,
+          etaDays,
+          items: { create: items },
+        },
+        include: { items: { include: { product: true } }, spot: true },
+      });
+
+      // Atomically increment usedQuantity for each discount applied to this
+      // order, then auto-disable any discount that has hit its cap.
+      for (const [discountId, delta] of discountUsageDelta) {
+        await tx.discount.update({
+          where: { id: discountId },
+          data: { usedQuantity: { increment: delta } },
+        });
+        // Fetch updated value to check cap (within the same transaction).
+        const updated = await tx.discount.findUnique({
+          where: { id: discountId },
+          select: { usedQuantity: true, maxQuantity: true },
+        });
+        if (
+          updated?.maxQuantity !== null &&
+          updated?.usedQuantity !== undefined &&
+          updated.maxQuantity !== undefined &&
+          updated.usedQuantity >= (updated.maxQuantity ?? Infinity)
+        ) {
+          await tx.discount.update({
+            where: { id: discountId },
+            data: { active: false },
+          });
+        }
+      }
+
+      return order;
     });
   },
 

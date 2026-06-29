@@ -37,6 +37,7 @@ const CategoryManagement = lazy(
 );
 
 const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
+const AdminOrders = lazy(() => import("./pages/staff/Orders"));
 const UserManagement = lazy(() => import("./pages/admin/UserManagement"));
 const StaffManagement = lazy(() => import("./pages/admin/StaffManagement"));
 const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
@@ -162,6 +163,10 @@ export default function App() {
                         <Route
                           path="/admin/dashboard"
                           element={<AdminDashboard />}
+                        />
+                        <Route
+                          path="/admin/orders"
+                          element={<AdminOrders />}
                         />
                         <Route
                           path="/admin/users"

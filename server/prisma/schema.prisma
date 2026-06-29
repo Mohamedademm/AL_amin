@@ -185,9 +185,10 @@ model Discount {
   category    Category? @relation(fields: [categoryId], references: [id])
   productId   String?
   product     Product?  @relation(fields: [productId], references: [id])
-  active      Boolean   @default(true)
-  startsAt    DateTime  @default(now())
-  endsAt      DateTime? // hidden from clients (stealth)
-  maxQuantity Int?      // hidden from clients (stealth)
-  createdAt   DateTime  @default(now())
+  active       Boolean   @default(true)
+  startsAt     DateTime  @default(now())
+  endsAt       DateTime? // hidden from clients (stealth)
+  maxQuantity  Int?      // hidden from clients (stealth cap)
+  usedQuantity Int       @default(0) // units sold under this discount
+  createdAt    DateTime  @default(now())
 }

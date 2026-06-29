@@ -13,8 +13,8 @@ Items checked `[x]` are done; `[~]` in progress.
 - [x] **P0** Limit JSON body size (`express.json({ limit })`) — *done*
 - [x] **P1** Server-side password policy (min length + complexity) on register/staff create — *done*
 - [ ] **P1** Replace `localStorage` JWT with httpOnly cookie + short-lived access + refresh token
-- [ ] **P1** Full input validation with `zod` schemas on every endpoint (currently manual)
-- [ ] **P1** Account lockout / exponential backoff after repeated failed logins
+- [x] **P1** Full input validation with `zod` schemas on every endpoint — *done (all routes: auth, user, product, category, order, spot, inventory, discount)*
+- [x] **P1** Account lockout / exponential backoff after repeated failed logins — *done (failedAttempts + lockedUntil in auth/service.ts, migration add_account_lockout)*
 - [x] **P2** Audit-log auth events (login success/failure, role changes) — *done (AuditService in auth/service.ts)*
 - [x] **P0** Remove the hard-coded `JWT_SECRET` fallback; fail fast if missing/<32 chars — *done*
 - [x] **P1** Mask internal 5xx error messages in production (no stack/DB leak) — *done*
@@ -23,7 +23,7 @@ Items checked `[x]` are done; `[~]` in progress.
 ## ⚙️ Functional requirements (new / fixed)
 - [x] **P0** Decrement boutique stock when an order is **ACCEPTED**; reject if insufficient — *done*
 - [x] **P1** Harden stock decrement against the check-to-update race (atomic conditional `updateMany`, no oversell) — *done*
-- [ ] **P1** Enforce discount `maxQuantity` (stealth cap) — track usage and auto-disable
+- [x] **P1** Enforce discount `maxQuantity` (stealth cap) — *done (usedQuantity column; incremented atomically on order create; auto-disables when cap hit)*
 - [x] **P1** Client order **detail** page + ability to **cancel** a `PENDING` order — *done*
 - [x] **P1** Advanced distribution routing: auto-pick in-stock boutique (LOCAL) vs central warehouse (REMOTE) + ETA — *done*
 - [x] **P1** Low-stock **alerts** (dashboard banner + optional email) — *done (GET /api/dashboard/low-stock + amber banner in Dashboard.tsx)*
@@ -37,7 +37,7 @@ Items checked `[x]` are done; `[~]` in progress.
 - [x] **P1** Toast notifications for success/error on every admin mutation — *done*
 - [x] **P1** Admin can **create users** (any role) + edit users — *done (User Directory)*
 - [x] **P1** **Search + pagination + sort** on admin tables — *done (shared DataTable: Users, Products, Inventory, Orders, Audit)*
-- [ ] **P1** Admin **order management** view (currently only staff route) + manual override
+- [x] **P1** Admin **order management** view — *done (/admin/orders route, reuses StaffOrders with full pipeline controls)*
 - [x] **P1** **CSV export** for orders — *done (GET /api/orders/export + Download button in staff Orders page)*
 - [ ] **P2** Bulk actions (multi-select delete / status change)
 - [ ] **P2** Admin **activity feed** + richer dashboard **charts** (trends over time)
