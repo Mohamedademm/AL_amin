@@ -1,10 +1,9 @@
-import bcrypt from "bcryptjs";
-import prisma from "../../config/database";
-import { AppError } from "../../middleware/errorHandler";
-import { RoleName, Prisma } from "../../generated/prisma";
-import { assertEmail, assertPasswordStrength } from "../../lib/validation";
+import bcrypt from 'bcryptjs';
+import prisma from '../../config/database';
+import { AppError } from '../../middleware/errorHandler';
+import { RoleName, Prisma } from '../../generated/prisma';
+import { assertEmail, assertPasswordStrength } from '../../lib/validation';
 
-// Fields safe to expose for any user record (never the password hash).
 const SAFE_SELECT = {
   id: true,
   email: true,
@@ -28,36 +27,57 @@ interface StaffInput {
 }
 
 export const UserService = {
-  // List users, optionally filtered by role (e.g. only staff, only clients).
+  // List all users, optionally filtered by role.
   async listAll(role?: RoleName) {
     return prisma.user.findMany({
       ...(role ? { where: { role } } : {}),
       select: SAFE_SELECT,
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: 'desc' },
     });
   },
 
-  // Create a staff member (MANAGER/WORKER) or admin with a hashed password.
-  async createStaff(data: StaffInput) {
-    if (
-      !data.email ||
-      !data.password ||
-      !data.firstName ||
-      !data.lastName ||
-      !data.role
-    ) {
-      throw new AppError(
-        "email, password, firstName, lastName and role are required",
-        400,
-      );
+  // List users assigned to the spot that a MANAGER manages.
+  async listByManagedSpot(managerId: string, role?: RoleName) {
+    const spot = await prisma.vendingSpot.findUnique({
+      where: { managerId },
+      select: { id: true },
+    });
+    if (!spot) return [];
+
+    return prisma.user.findMany({
+      where: {
+        assignedSpotId: spot.id,
+        ...(role ? { role } : {}),
+      },
+      select: SAFE_SELECT,
+      orderBy: { createdAt: 'desc' },
+    });
+  },
+
+  // Create a staff account. ADMIN can create any role; MANAGER can only create WORKER.
+  async createStaff(data: StaffInput, requester: { id: string; role: string }) {
+    if (!data.email || !data.password || !data.firstName || !data.lastName || !data.role) {
+      throw new AppError('email, password, firstName, lastName and role are required', 400);
     }
+
+    // MANAGER can only create WORKER accounts for their own spot.
+    if (requester.role === 'MANAGER') {
+      if (data.role !== 'WORKER') {
+        throw new AppError('Managers can only create WORKER accounts', 403);
+      }
+      const spot = await prisma.vendingSpot.findUnique({
+        where: { managerId: requester.id },
+        select: { id: true },
+      });
+      if (!spot) throw new AppError('You do not manage any vending spot', 400);
+      data.assignedSpotId = spot.id; // force-assign to their spot
+    }
+
     assertEmail(data.email);
     assertPasswordStrength(data.password);
-    const exists = await prisma.user.findUnique({
-      where: { email: data.email },
-    });
-    if (exists)
-      throw new AppError("An account with this email already exists", 409);
+
+    const exists = await prisma.user.findUnique({ where: { email: data.email } });
+    if (exists) throw new AppError('An account with this email already exists', 409);
 
     const password = await bcrypt.hash(data.password, 10);
     return prisma.user.create({
@@ -75,10 +95,7 @@ export const UserService = {
   },
 
   // Update a user's role, status, profile fields, or assigned spot.
-  async update(
-    id: string,
-    data: Partial<StaffInput> & { status?: string },
-  ) {
+  async update(id: string, data: Partial<StaffInput> & { status?: string }) {
     const allowed: Record<string, unknown> = {};
     if (data.firstName !== undefined) allowed.firstName = data.firstName;
     if (data.lastName !== undefined) allowed.lastName = data.lastName;
