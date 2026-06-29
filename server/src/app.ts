@@ -46,7 +46,8 @@ const staticOrigins = ENV.CLIENT_URL.split(",")
 const isAllowedOrigin = (origin?: string) =>
   !origin ||
   staticOrigins.includes(origin) ||
-  /\.vercel\.app$/.test(new URL(origin).hostname);
+  /\.vercel\.app$/.test(new URL(origin).hostname) ||
+  (ENV.NODE_ENV !== "production" && /^localhost$/i.test(new URL(origin).hostname));
 
 app.use(
   cors({
