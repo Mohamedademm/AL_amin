@@ -8,6 +8,7 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Modal } from '../../components/ui/Modal';
 import { PageLoader } from '../../components/ui/Spinner';
+import { useAuth } from '../../context/AuthContext';
 import { useConfirm } from '../../context/ConfirmContext';
 import { useToast } from '../../context/ToastContext';
 import { initials } from '../../utils/format';
@@ -40,6 +41,8 @@ export default function StaffManagement() {
   const qc = useQueryClient();
   const confirm = useConfirm();
   const toast = useToast();
+  const { user: currentUser } = useAuth();
+  const isManager = currentUser?.role === 'MANAGER';
   const { data: users, isLoading } = useQuery({ queryKey: ['users'], queryFn: () => userApi.list() });
   const { data: spots } = useQuery({ queryKey: ['spots'], queryFn: spotApi.list });
 
@@ -174,53 +177,60 @@ export default function StaffManagement() {
       </section>
 
       {/* ── Vending Spots section ── */}
-      <section>
-        <PageHeader
-          title="Vending Spots"
-          subtitle="Manage boutiques and vending locations. Staff assigned to a spot only see orders from that location."
-          action={<Button onClick={openSpotCreate}><Plus size={16} /> Add spot</Button>}
-        />
+      {currentUser?.role === 'ADMIN' && (
+        <section>
+          <PageHeader
+            title="Vending Spots"
+            subtitle="Manage boutiques and vending locations. Staff assigned to a spot only see orders from that location."
+            action={<Button onClick={openSpotCreate}><Plus size={16} /> Add spot</Button>}
+          />
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {(spots ?? []).map((s) => (
-            <div key={s.id} className="rounded-2xl border border-line bg-surface p-5">
-              <div className="flex items-start justify-between">
-                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/15 text-emerald-500">
-                  <Warehouse size={20} />
-                </span>
-                <div className="flex gap-1">
-                  <button onClick={() => openSpotEdit(s)} className="text-muted transition-colors hover:text-primary" aria-label="Edit spot"><Pencil size={16} /></button>
-                  <button
-                    onClick={async () => {
-                      if (await confirm({ title: 'Remove spot', message: `Remove ${s.name}?`, danger: true, confirmLabel: 'Remove' }))
-                        removeSpot.mutate(s.id);
-                    }}
-                    className="text-muted transition-colors hover:text-red-500"
-                    aria-label="Remove spot"
-                  >
-                    <Trash2 size={16} />
-                  </button>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {(spots ?? []).map((s) => (
+              <div key={s.id} className="rounded-2xl border border-line bg-surface p-5">
+                <div className="flex items-start justify-between">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/15 text-emerald-500">
+                    <Warehouse size={20} />
+                  </span>
+                  <div className="flex gap-1">
+                    <button onClick={() => openSpotEdit(s)} className="text-muted transition-colors hover:text-primary" aria-label="Edit spot"><Pencil size={16} /></button>
+                    <button
+                      onClick={async () => {
+                        if (await confirm({ title: 'Remove spot', message: `Remove ${s.name}?`, danger: true, confirmLabel: 'Remove' }))
+                          removeSpot.mutate(s.id);
+                      }}
+                      className="text-muted transition-colors hover:text-red-500"
+                      aria-label="Remove spot"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
                 </div>
-              </div>
-              <p className="mt-3 font-semibold text-content">{s.name}</p>
-              <div className="mt-1.5 space-y-1 text-xs text-muted">
-                <p className="flex items-center gap-1.5"><MapPin size={12} /> {s.location}</p>
-                <p className="flex items-center gap-1.5"><MapPin size={12} /> {s.address}</p>
-                {s.phone && <p>{s.phone}</p>}
-              </div>
-              {s._count && (
-                <div className="mt-3 flex gap-3 text-xs text-muted">
-                  <span>{s._count.inventory} products</span>
-                  <span>{s._count.orders} orders</span>
+                <p className="mt-3 font-semibold text-content">{s.name}</p>
+                <div className="mt-1.5 space-y-1 text-xs text-muted">
+                  <p className="flex items-center gap-1.5"><MapPin size={12} /> {s.location}</p>
+                  <p className="flex items-center gap-1.5"><MapPin size={12} /> {s.address}</p>
+                  {s.phone && <p>{s.phone}</p>}
+                  {s.manager && (
+                    <p className="flex items-center gap-1.5 text-xs text-muted">
+                      <UserCog size={12} /> Manager: {s.manager.firstName} {s.manager.lastName}
+                    </p>
+                  )}
                 </div>
-              )}
-            </div>
-          ))}
-          {(spots ?? []).length === 0 && (
-            <div className="col-span-full flex flex-col items-center gap-2 py-16 text-muted"><Store size={32} className="opacity-50" />No vending spots yet.</div>
-          )}
-        </div>
-      </section>
+                {s._count && (
+                  <div className="mt-3 flex gap-3 text-xs text-muted">
+                    <span>{s._count.inventory} products</span>
+                    <span>{s._count.orders} orders</span>
+                  </div>
+                )}
+              </div>
+            ))}
+            {(spots ?? []).length === 0 && (
+              <div className="col-span-full flex flex-col items-center gap-2 py-16 text-muted"><Store size={32} className="opacity-50" />No vending spots yet.</div>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* ── Create staff modal ── */}
       <Modal open={open} onClose={() => setOpen(false)} title="New staff member">
@@ -234,23 +244,29 @@ export default function StaffManagement() {
           <Input label="Phone (optional)" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
           <div className="grid grid-cols-2 gap-3">
             <Input label="Password" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required minLength={6} />
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-content">Role</label>
-              <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value as Role })} className="input-base">
-                {STAFF_ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
-              </select>
-            </div>
+            {!isManager && (
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-content">Role</label>
+                <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value as Role })} className="input-base">
+                  {STAFF_ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
+                </select>
+              </div>
+            )}
           </div>
           {form.role !== 'ADMIN' && (
             <div>
               <label className="mb-1.5 block text-sm font-medium text-content">Assigned vending spot</label>
-              <select value={form.assignedSpotId} onChange={(e) => setForm({ ...form, assignedSpotId: e.target.value })} className="input-base">
+              <select value={form.assignedSpotId} onChange={(e) => setForm({ ...form, assignedSpotId: e.target.value })} className="input-base" disabled={isManager}>
                 <option value="">-- No spot (sees all orders) --</option>
                 {(spots ?? []).map((s) => (
                   <option key={s.id} value={s.id}>{s.name} — {s.location}</option>
                 ))}
               </select>
-              <p className="mt-1 text-[10px] text-muted">Staff will only see orders for their assigned spot.</p>
+              {isManager ? (
+                <p className="mt-1 text-[10px] text-muted">Workers will be assigned to your vending spot</p>
+              ) : (
+                <p className="mt-1 text-[10px] text-muted">Staff will only see orders for their assigned spot.</p>
+              )}
             </div>
           )}
           <div className="flex justify-end gap-2 pt-2">
