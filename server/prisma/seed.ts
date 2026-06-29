@@ -215,7 +215,7 @@ async function main() {
   ]);
 
   // 2. Users across every role. Staff are assigned to their vending spot.
-  const [admin, , , client] = await Promise.all([
+  const [admin, manager, , client] = await Promise.all([
     prisma.user.create({
       data: {
         email: "admin@alamine.com",
@@ -259,6 +259,12 @@ async function main() {
       },
     }),
   ]);
+
+  // Assign manager to the first vending spot.
+  await prisma.vendingSpot.update({
+    where: { id: spots[0].id },
+    data: { managerId: manager.id },
+  });
 
   // 3. Categories + products + distributed inventory.
   const createdProducts = [];
