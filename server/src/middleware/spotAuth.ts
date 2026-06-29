@@ -23,7 +23,7 @@ export const authorizeSpotManager = (paramName: string = 'id') => {
         throw new AppError('Only managers can modify spots', 403);
       }
 
-      const spotId = req.params[paramName];
+      const spotId = req.params[paramName] as string | undefined;
       if (!spotId) {
         throw new AppError('Spot ID is required', 400);
       }
