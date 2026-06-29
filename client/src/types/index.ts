@@ -76,6 +76,9 @@ export interface VendingSpot {
   location: string;
   address: string;
   phone?: string | null;
+  isWarehouse: boolean;
+  managerId?: string | null;
+  manager?: { id: string; firstName: string; lastName: string; email: string } | null;
   _count?: { inventory: number; orders: number };
 }
 
