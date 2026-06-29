@@ -10,7 +10,7 @@ directories are added, removed, or moved.
     - `assets/`: Static images (e.g. `hero.png`)
     - `components/`
       - `brand/`: Logo mark + wordmark
-      - `ui/`: Design-system primitives (Button, Card, Input, Badge, Modal, Spinner, StatCard, PageHeader, Reveal, ThemeToggle)
+      - `ui/`: Design-system primitives (Button, Card, Input, Badge, Modal, Spinner, StatCard, PageHeader, Reveal, ThemeToggle, ErrorBoundary)
       - `common/`: Composite pieces (ProductCard, ProductImage)
       - `layout/`: Shells (MainLayout, DashboardLayout, AuthShell, Navbar, Footer; StaffLayout/AdminLayout re-export DashboardLayout)
     - `context/`: Global providers — `ThemeContext` (light/dark), `AuthContext` (session), `CartContext`, `ToastContext` (notifications), `ConfirmContext` (dialog)
@@ -27,7 +27,7 @@ directories are added, removed, or moved.
 - `server/`: Backend (Node + Express 5 + Prisma 7 + PostgreSQL)
   - `src/`
     - `config/`: Env + Prisma client + Google OAuth (passport) + Multer file upload (`database.ts`, `env.ts`, `passport.ts`, `upload.ts`)
-    - `lib/`: Cross-cutting logic (`pricing.ts` — discount engine; `validation.ts` — Zod schemas + `validate` middleware + email/password rules)
+    - `lib/`: Cross-cutting logic (`pricing.ts` — discount engine; `validation.ts` — Zod schemas + `validate` middleware + email/password rules; `logger.ts` — pino structured logger; `csv.ts` — RFC-4180 CSV serializer; `requestContext.ts` — AsyncLocalStorage for audit)
     - `middleware/`: `auth` (JWT via cookie or Bearer + RBAC), `errorHandler`
     - `modules/`: Domain modules, each with `routes` / `controller` / `service` (`auth`, `product`, `category`, `order`, `inventory`, `spot`, `user`, `dashboard`, `discount`, `audit`; `order` also has `cleanup.ts` — interval-based order expiry, started by the local server only)
     - `app.ts`: Builds & exports the configured Express app (no `listen`) — shared by local + serverless; mounts passport + `/uploads` static

@@ -6,6 +6,7 @@ import { AppError } from "../../middleware/errorHandler";
 import { RegisterInput, LoginInput, JwtPayload } from "./types";
 import { RoleName, User } from "../../generated/prisma";
 import { assertEmail, assertPasswordStrength } from "../../lib/validation";
+import { AuditService } from "../audit/service";
 
 // Number of bcrypt salt rounds — 10 is the standard cost/perf trade-off.
 const SALT_ROUNDS = 10;
@@ -48,6 +49,13 @@ export const AuthService = {
       },
     });
 
+    await AuditService.log({
+      userId: user.id,
+      action: "REGISTER",
+      entity: "User",
+      entityId: user.id,
+    });
+
     const token = signToken({
       id: user.id,
       email: user.email,
@@ -87,6 +95,12 @@ export const AuthService = {
         updates.lockedUntil = new Date(Date.now() + LOCKOUT_DURATION_MS);
       }
       await prisma.user.update({ where: { id: user.id }, data: updates });
+      await AuditService.log({
+        userId: user.id,
+        action: "LOGIN_FAILED",
+        entity: "User",
+        entityId: user.id,
+      });
       throw new AppError("Invalid email or password", 401);
     }
 
@@ -94,6 +108,12 @@ export const AuthService = {
     await prisma.user.update({
       where: { id: user.id },
       data: { failedAttempts: 0, lockedUntil: null },
+    });
+    await AuditService.log({
+      userId: user.id,
+      action: "LOGIN_SUCCESS",
+      entity: "User",
+      entityId: user.id,
     });
 
     const token = signToken({

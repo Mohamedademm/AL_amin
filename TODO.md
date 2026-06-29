@@ -16,11 +16,13 @@ Items checked `[x]` are done; `[~]` in progress.
 - [ ] **P1** Full input validation with `zod` schemas on every endpoint (currently manual)
 - [ ] **P1** Account lockout / exponential backoff after repeated failed logins
 - [ ] **P2** Audit-log auth events (login success/failure, role changes)
-- [ ] **P2** Generate a strong `JWT_SECRET` per environment; document rotation
+- [x] **P0** Remove the hard-coded `JWT_SECRET` fallback; fail fast if missing/<32 chars — *done*
+- [x] **P1** Mask internal 5xx error messages in production (no stack/DB leak) — *done*
 - [ ] **P2** Add CSP fine-tuning + HSTS in production
 
 ## ⚙️ Functional requirements (new / fixed)
 - [x] **P0** Decrement boutique stock when an order is **ACCEPTED**; reject if insufficient — *done*
+- [x] **P1** Harden stock decrement against the check-to-update race (atomic conditional `updateMany`, no oversell) — *done*
 - [ ] **P1** Enforce discount `maxQuantity` (stealth cap) — track usage and auto-disable
 - [x] **P1** Client order **detail** page + ability to **cancel** a `PENDING` order — *done*
 - [x] **P1** Advanced distribution routing: auto-pick in-stock boutique (LOCAL) vs central warehouse (REMOTE) + ETA — *done*
@@ -45,7 +47,7 @@ Items checked `[x]` are done; `[~]` in progress.
 ## ⚡ Performance
 - [x] **P1** Route-level **code splitting** (`React.lazy`) for staff/admin bundles — *done*
 - [ ] **P1** Pagination on product/order lists (server-side) for scale
-- [ ] **P1** DB indexes on hot columns (`Order.status`, `Order.clientId`, `Inventory.spotId`)
+- [x] **P1** DB indexes on hot columns (Order.status/clientId/spotId/createdAt, Inventory.spotId, OrderItem, Product.categoryId, AuditLog) — *done (migration `add_performance_indexes`)*
 - [ ] **P2** Responsive image `srcset` + blur-up placeholders
 - [ ] **P2** HTTP caching headers / ETag on public GETs; optional Redis cache for catalog
 - [ ] **P2** Bundle analysis + tree-shake lucide imports
@@ -55,7 +57,8 @@ Items checked `[x]` are done; `[~]` in progress.
 - [x] **P2** Skeleton loaders instead of spinners on lists — *done (Skeleton + DataTable + catalog)*
 - [ ] **P2** Form-level validation messages + disabled-until-valid
 - [ ] **P2** Keyboard/focus trap in modals; full a11y pass (axe)
-- [ ] **P2** Empty-state illustrations; 500 error boundary page
+- [ ] **P2** Empty-state illustrations
+- [x] **P1** Global React **ErrorBoundary** + 500 fallback page (catches any render crash) — *done*
 
 ## 🧪 Quality / DevOps
 - [x] **P1** Tests: Vitest (client, 14) + backend integration suite (node:test, 15) — *done*; see [docs/TEST_REPORT.md](docs/TEST_REPORT.md)

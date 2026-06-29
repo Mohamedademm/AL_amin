@@ -14,6 +14,14 @@ router.use(authenticate);
 
 router.post("/", validate(createOrderSchema), OrderController.create);
 router.get("/", OrderController.list);
+
+// Staff-only CSV export — declared before "/:id" so "export" is not read as an id.
+router.get(
+  "/export",
+  authorize(["ADMIN", "MANAGER", "WORKER"]),
+  OrderController.exportCsv,
+);
+
 router.get("/:id", OrderController.getById);
 
 // Clients can cancel their own pending order (staff may cancel any).

@@ -9,8 +9,9 @@ dotenv.config();
 export const ENV = {
   PORT: process.env.PORT || "5000",
   DATABASE_URL: process.env.DATABASE_URL as string,
-  JWT_SECRET:
-    process.env.JWT_SECRET || "your_default_secret_change_this_in_production",
+  // No fallback on purpose: a hard-coded default secret lets anyone forge admin
+  // JWTs. The validation below fails fast if it is missing or too weak.
+  JWT_SECRET: process.env.JWT_SECRET as string,
   NODE_ENV: process.env.NODE_ENV || "development",
   // Allowed browser origin for CORS (the Vite client).
   CLIENT_URL: process.env.CLIENT_URL || "http://localhost:5173",
@@ -31,5 +32,12 @@ const missingVars = Object.entries(ENV)
 if (missingVars.length > 0) {
   throw new Error(
     `Missing critical environment variables: ${missingVars.join(", ")}`,
+  );
+}
+
+// Reject weak JWT secrets so a forgeable token can never reach production.
+if (ENV.JWT_SECRET.length < 32) {
+  throw new Error(
+    "JWT_SECRET must be at least 32 characters. Generate one with: openssl rand -hex 32",
   );
 }

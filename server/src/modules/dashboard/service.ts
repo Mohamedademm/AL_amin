@@ -70,6 +70,27 @@ export const DashboardService = {
     };
   },
 
+  // Detailed list of stock records below the low-stock threshold, so the
+  // dashboard can show exactly which product/boutique needs replenishing.
+  async getLowStock() {
+    const rows = await prisma.inventory.findMany({
+      where: { quantity: { lt: LOW_STOCK_THRESHOLD } },
+      orderBy: { quantity: "asc" },
+      take: 50,
+      include: {
+        product: { select: { name: true } },
+        spot: { select: { name: true } },
+      },
+    });
+    return rows.map((r) => ({
+      id: r.id,
+      productName: r.product.name,
+      spotName: r.spot.name,
+      quantity: r.quantity,
+      threshold: LOW_STOCK_THRESHOLD,
+    }));
+  },
+
   // Daily orders + accepted revenue for the last `days` days (for charts).
   async getTrends(days = 14) {
     const since = new Date();

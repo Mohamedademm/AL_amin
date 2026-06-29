@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
-import morgan from "morgan";
+import pinoHttp from "pino-http";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 import path from "path";
@@ -9,6 +9,7 @@ import { ENV } from "./config/env";
 import { errorHandler, AppError } from "./middleware/errorHandler";
 import passport from "./config/passport";
 import { ctx } from "./lib/requestContext";
+import { logger } from "./lib/logger";
 
 import authRoutes from "./modules/auth/routes";
 import productRoutes from "./modules/product/routes";
@@ -26,8 +27,16 @@ const app = express();
 // Trust the Vercel/proxy hop so secure cookies + rate-limit see the real IP.
 app.set("trust proxy", 1);
 
-// Security headers.
-app.use(helmet());
+// Security headers. In production also force HTTPS for a year (HSTS, with
+// preload) so browsers never downgrade to http after the first secure visit.
+app.use(
+  helmet({
+    hsts:
+      ENV.NODE_ENV === "production"
+        ? { maxAge: 31536000, includeSubDomains: true, preload: true }
+        : false,
+  }),
+);
 
 // Build the CORS allowlist from CLIENT_URL (comma-separated) and also accept
 // any preview/production deployment on the same Vercel account (*.vercel.app).
@@ -49,7 +58,14 @@ app.use(
   }),
 );
 
-app.use(morgan("dev"));
+// Structured request logging (replaces morgan): one JSON line per request in
+// prod, pretty-printed in dev. Health checks are silenced to avoid noise.
+app.use(
+  pinoHttp({
+    logger,
+    autoLogging: { ignore: (req) => req.url === "/health" },
+  }),
+);
 app.use(express.json({ limit: "1mb" })); // cap request body size
 app.use(cookieParser()); // parse the httpOnly auth cookie
 app.use(passport.initialize()); // Google OAuth strategy

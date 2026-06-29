@@ -100,6 +100,16 @@ export const orderApi = {
   updateStatus: (id: string, status: OrderStatus) =>
     unwrap<Order>(http.patch(`/orders/${id}/status`, { status })),
   cancel: (id: string) => unwrap<Order>(http.post(`/orders/${id}/cancel`)),
+  // Download the staff order list as a CSV file (triggers a browser download).
+  exportCsv: async () => {
+    const res = await http.get("/orders/export", { responseType: "blob" });
+    const url = URL.createObjectURL(res.data as Blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `orders-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  },
 };
 
 export const inventoryApi = {
@@ -143,9 +153,19 @@ export const userApi = {
   remove: (id: string) => http.delete(`/users/${id}`),
 };
 
+// A single inventory record flagged as low stock on the dashboard.
+export interface LowStockItem {
+  id: string;
+  productName: string;
+  spotName: string;
+  quantity: number;
+  threshold: number;
+}
+
 export const dashboardApi = {
   stats: () => unwrap<DashboardStats>(http.get("/dashboard/stats")),
   trends: () => unwrap<TrendPoint[]>(http.get("/dashboard/trends")),
+  lowStock: () => unwrap<LowStockItem[]>(http.get("/dashboard/low-stock")),
 };
 
 export const discountApi = {

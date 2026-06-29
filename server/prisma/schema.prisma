@@ -70,6 +70,8 @@ model Product {
   inventory        Inventory[]
   orderItems       OrderItem[]
   discounts        Discount[]
+
+  @@index([categoryId]) // catalog filtering / category joins
 }
 
 model ProductImage {
@@ -79,6 +81,8 @@ model ProductImage {
   url       String
   sortOrder Int      @default(0)
   createdAt DateTime @default(now())
+
+  @@index([productId]) // load a product's gallery
 }
 
 model VendingSpot {
@@ -107,6 +111,7 @@ model Inventory {
   updatedAt  DateTime    @updatedAt
 
   @@unique([productId, spotId])
+  @@index([spotId]) // per-spot inventory listing (the composite covers productId only)
 }
 
 model Order {
@@ -124,6 +129,11 @@ model Order {
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
   items        OrderItem[]
+
+  @@index([clientId]) // "my orders" lookups
+  @@index([spotId]) // staff per-spot order lists
+  @@index([status]) // dashboard / status filters
+  @@index([createdAt]) // newest-first ordering at scale
 }
 
 model OrderItem {
@@ -134,6 +144,9 @@ model OrderItem {
   product   Product @relation(fields: [productId], references: [id])
   quantity  Int
   price     Decimal @db.Decimal(10, 2) // Price at time of order
+
+  @@index([orderId]) // load an order's lines
+  @@index([productId]) // product sales lookups
 }
 
 model AuditLog {
@@ -146,6 +159,10 @@ model AuditLog {
   oldValue  String?  @db.Text
   newValue  String?  @db.Text
   timestamp DateTime @default(now())
+
+  @@index([userId]) // who-did-what lookups
+  @@index([timestamp]) // newest-first audit feed
+  @@index([entity, entityId]) // history of a specific record
 }
 
 model Event {

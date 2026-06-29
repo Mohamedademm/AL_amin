@@ -8,6 +8,7 @@ import { ToastProvider } from "./context/ToastContext";
 import { ConfirmProvider } from "./context/ConfirmContext";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import { PageLoader } from "./components/ui/Spinner";
+import { ErrorBoundary } from "./components/ui/ErrorBoundary";
 
 import MainLayout from "./components/layout/MainLayout";
 import DashboardLayout from "./components/layout/DashboardLayout";
@@ -51,8 +52,9 @@ const MANAGER = ["ADMIN", "MANAGER"] as const;
 
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
         <ToastProvider>
           <AuthProvider>
             <CartProvider>
@@ -185,7 +187,8 @@ export default function App() {
             </CartProvider>
           </AuthProvider>
         </ToastProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }

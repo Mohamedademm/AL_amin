@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, X, ShieldCheck, PackageOpen, Truck } from "lucide-react";
+import { Check, X, ShieldCheck, PackageOpen, Truck, Download } from "lucide-react";
 import { orderApi } from "../../services/api";
 import { PageHeader } from "../../components/ui/PageHeader";
 import { StatusBadge } from "../../components/ui/Badge";
@@ -46,6 +46,19 @@ export default function StaffOrders() {
   const busy = mutation.isPending;
   const act = (id: string, status: OrderStatus) =>
     mutation.mutate({ id, status });
+
+  const [exporting, setExporting] = useState(false);
+  // Stream the current order list to a downloadable CSV file.
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      await orderApi.exportCsv();
+    } catch {
+      toast.error("Could not export orders");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const columns: Column<Order>[] = [
     {
@@ -183,6 +196,15 @@ export default function StaffOrders() {
       <PageHeader
         title="Order Management"
         subtitle="Verify, accept, ship and deliver incoming customer orders."
+        action={
+          <Button
+            variant="outline"
+            onClick={handleExport}
+            disabled={exporting || (orders?.length ?? 0) === 0}
+          >
+            <Download size={16} /> {exporting ? "Exporting…" : "Export CSV"}
+          </Button>
+        }
       />
 
       <DataTable

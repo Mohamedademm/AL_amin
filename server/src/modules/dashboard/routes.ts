@@ -26,6 +26,21 @@ router.get(
   },
 );
 
+// GET /api/dashboard/low-stock — detailed list of items below threshold.
+router.get(
+  "/low-stock",
+  async (_req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      res.json({
+        status: "success",
+        data: await DashboardService.getLowStock(),
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
 // GET /api/dashboard/trends — daily orders + revenue series for charts.
 router.get(
   "/trends",

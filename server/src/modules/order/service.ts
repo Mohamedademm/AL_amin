@@ -189,23 +189,24 @@ export const OrderService = {
     if (next === "ACCEPTED" || next === "SHIPPING") {
       await prisma.$transaction(async (tx) => {
         for (const item of order.items) {
-          const key = {
-            productId_spotId: {
+          // Atomic guard: decrement only if enough stock remains. updateMany
+          // applies the `quantity >= item.quantity` filter and the decrement in
+          // a single SQL UPDATE, so two concurrent accepts can never oversell —
+          // unlike a separate read-then-write, which has a check-to-update gap.
+          const result = await tx.inventory.updateMany({
+            where: {
               productId: item.productId,
               spotId: order.spotId,
+              quantity: { gte: item.quantity },
             },
-          };
-          const stock = await tx.inventory.findUnique({ where: key });
-          if (!stock || stock.quantity < item.quantity) {
+            data: { quantity: { decrement: item.quantity } },
+          });
+          if (result.count === 0) {
             throw new AppError(
               "Insufficient stock at the boutique to accept this order",
               400,
             );
           }
-          await tx.inventory.update({
-            where: key,
-            data: { quantity: { decrement: item.quantity } },
-          });
         }
         await tx.order.update({ where: { id }, data: { status: next } });
       });

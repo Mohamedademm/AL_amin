@@ -45,7 +45,7 @@ jobs:
           --health-retries 10
     env:
       DATABASE_URL: postgresql://user:password@localhost:5433/alamin_db?schema=public
-      JWT_SECRET: ci_test_secret
+      JWT_SECRET: ci_test_secret_at_least_32_characters_long_0
       NODE_ENV: test
     steps:
       - uses: actions/checkout@v4
@@ -55,6 +55,7 @@ jobs:
           cache: npm
           cache-dependency-path: server/package-lock.json
       - run: npm ci
+      - run: npm run lint
       - run: npx prisma generate
       - run: npx prisma migrate deploy
       - run: npx tsx prisma/seed.ts

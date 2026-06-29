@@ -31,6 +31,12 @@ export default function AdminDashboard() {
     queryKey: ["dashboard"],
     queryFn: dashboardApi.stats,
   });
+  // Only fetch the detailed low-stock list when the headline count is non-zero.
+  const { data: lowStockItems } = useQuery({
+    queryKey: ["dashboard", "low-stock"],
+    queryFn: dashboardApi.lowStock,
+    enabled: !!stats && stats.lowStock > 0,
+  });
   if (isLoading || !stats) return <PageLoader label="Loading overview" />;
 
   const maxStatus = Math.max(...statusOrder.map((s) => stats.orders[s]), 1);
@@ -41,6 +47,31 @@ export default function AdminDashboard() {
         title="HQ Overview"
         subtitle="System-wide performance, revenue and network health."
       />
+
+      {lowStockItems && lowStockItems.length > 0 && (
+        <div className="mb-6 rounded-2xl border border-amber-500/40 bg-amber-500/10 p-5">
+          <div className="flex items-center gap-2 text-amber-500">
+            <AlertTriangle size={18} />
+            <h3 className="font-semibold">
+              {lowStockItems.length} item
+              {lowStockItems.length > 1 ? "s" : ""} need restocking
+            </h3>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {lowStockItems.slice(0, 12).map((it) => (
+              <span
+                key={it.id}
+                className="rounded-full border border-amber-500/30 bg-surface px-3 py-1 text-xs"
+              >
+                {it.productName} · {it.spotName}{" "}
+                <span className="font-mono font-semibold text-amber-500">
+                  {it.quantity}
+                </span>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
