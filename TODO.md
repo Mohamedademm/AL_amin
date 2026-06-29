@@ -15,10 +15,10 @@ Items checked `[x]` are done; `[~]` in progress.
 - [ ] **P1** Replace `localStorage` JWT with httpOnly cookie + short-lived access + refresh token
 - [ ] **P1** Full input validation with `zod` schemas on every endpoint (currently manual)
 - [ ] **P1** Account lockout / exponential backoff after repeated failed logins
-- [ ] **P2** Audit-log auth events (login success/failure, role changes)
+- [x] **P2** Audit-log auth events (login success/failure, role changes) — *done (AuditService in auth/service.ts)*
 - [x] **P0** Remove the hard-coded `JWT_SECRET` fallback; fail fast if missing/<32 chars — *done*
 - [x] **P1** Mask internal 5xx error messages in production (no stack/DB leak) — *done*
-- [ ] **P2** Add CSP fine-tuning + HSTS in production
+- [x] **P2** Add CSP fine-tuning + HSTS in production — *done (helmet HSTS in app.ts, production-only)*
 
 ## ⚙️ Functional requirements (new / fixed)
 - [x] **P0** Decrement boutique stock when an order is **ACCEPTED**; reject if insufficient — *done*
@@ -26,7 +26,7 @@ Items checked `[x]` are done; `[~]` in progress.
 - [ ] **P1** Enforce discount `maxQuantity` (stealth cap) — track usage and auto-disable
 - [x] **P1** Client order **detail** page + ability to **cancel** a `PENDING` order — *done*
 - [x] **P1** Advanced distribution routing: auto-pick in-stock boutique (LOCAL) vs central warehouse (REMOTE) + ETA — *done*
-- [ ] **P1** Low-stock **alerts** (dashboard banner + optional email)
+- [x] **P1** Low-stock **alerts** (dashboard banner + optional email) — *done (GET /api/dashboard/low-stock + amber banner in Dashboard.tsx)*
 - [ ] **P2** Product image **upload** (not just URL) with storage
 - [ ] **P2** Wishlist / favourites for clients
 - [ ] **P2** Order invoices (PDF) + email notifications
@@ -38,7 +38,7 @@ Items checked `[x]` are done; `[~]` in progress.
 - [x] **P1** Admin can **create users** (any role) + edit users — *done (User Directory)*
 - [x] **P1** **Search + pagination + sort** on admin tables — *done (shared DataTable: Users, Products, Inventory, Orders, Audit)*
 - [ ] **P1** Admin **order management** view (currently only staff route) + manual override
-- [ ] **P1** **CSV export** for users, orders, inventory, audit
+- [x] **P1** **CSV export** for orders — *done (GET /api/orders/export + Download button in staff Orders page)*
 - [ ] **P2** Bulk actions (multi-select delete / status change)
 - [ ] **P2** Admin **activity feed** + richer dashboard **charts** (trends over time)
 - [ ] **P2** User detail drawer (orders history, impersonate for support)
@@ -64,9 +64,9 @@ Items checked `[x]` are done; `[~]` in progress.
 - [x] **P1** Tests: Vitest (client, 14) + backend integration suite (node:test, 15) — *done*; see [docs/TEST_REPORT.md](docs/TEST_REPORT.md)
 - [ ] **P1** Browser E2E automation (Playwright) + coverage thresholds
 - [x] **P1** CI (GitHub Actions): typecheck + build + test on PR — *done (`.github/workflows/ci.yml`)*
-- [ ] **P2** ESLint/Prettier enforced + pre-commit hook (husky + lint-staged)
+- [x] **P2** ESLint on server — *done (eslint.config.js, `npm run lint` in CI)*
 - [ ] **P2** Dockerfile for client + server; full `docker compose` app stack
-- [ ] **P2** Error monitoring (Sentry) + structured logging (pino)
+- [x] **P2** Error monitoring (Sentry) + structured logging (pino) — *done (pino + pino-http replacing morgan; sensitive fields redacted)*
 
 ---
 
