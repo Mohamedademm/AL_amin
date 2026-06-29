@@ -66,8 +66,10 @@ stealth `endsAt`/`maxQuantity`), `AuditLog`, `Event`.
 ### API (base `/api`, envelope `{ status, data }`)
 `POST /auth/register|login`, `GET /auth/me` · `GET /products[/:id]`, CRUD (admin/mgr) ·
 `GET /categories`, CRUD · `POST|GET /orders`, `PATCH /orders/:id/status` ·
-`GET|PUT /inventory` · `GET /spots`, CRUD · `GET|POST|PATCH|DELETE /users` (admin) ·
-`GET /dashboard/stats` · `GET|POST|PATCH|DELETE /discounts` · `GET /audit` (admin).
+`GET|PUT /inventory` · `GET /spots`, CRUD · `GET|POST|PATCH|DELETE /users` (admin;
+self-guard: an admin cannot change their own role or delete their own account → 400) ·
+`GET /dashboard/stats`, `GET /dashboard/low-stock` · `GET /orders/export` (CSV, staff) ·
+`GET|POST|PATCH|DELETE /discounts` · `GET /audit` (admin).
 
 ## 7. Frontend layout (`client/src`)
 - `context/` `ThemeContext` (light/dark), `AuthContext` (session restore via `/auth/me`),

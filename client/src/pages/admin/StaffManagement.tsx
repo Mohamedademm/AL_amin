@@ -64,7 +64,7 @@ export default function StaffManagement() {
   const create = useMutation({
     mutationFn: () => userApi.create({
       ...form,
-      assignedSpotId: form.assignedSpotId || null,
+      assignedSpotId: form.role === 'ADMIN' ? null : (form.assignedSpotId || null),
     }),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['users'] }); setOpen(false); setForm(EMPTY_FORM); toast.success('Staff account created'); },
     onError: (e: any) => setError(e?.response?.data?.message || 'Could not create staff account.'),
@@ -137,6 +137,7 @@ export default function StaffManagement() {
 
   const staff = (users ?? []).filter((u) => STAFF_ROLES.includes(u.role));
   const spotMap = new Map((spots ?? []).map((s) => [s.id, s.name]));
+  const editingSelf = editingUser?.id === currentUser?.id;
 
   return (
     <div className="space-y-12">
@@ -155,7 +156,9 @@ export default function StaffManagement() {
                 <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/15 text-sm font-bold text-primary">{initials(u.firstName, u.lastName)}</span>
                 <div className="flex gap-1">
                   <button onClick={() => openEdit(u)} className="text-muted transition-colors hover:text-primary" aria-label="Edit"><Pencil size={16} /></button>
-                  <button onClick={() => askRemove(u)} className="text-muted transition-colors hover:text-red-500" aria-label="Remove"><Trash2 size={16} /></button>
+                  {u.id !== currentUser?.id && (
+                    <button onClick={() => askRemove(u)} className="text-muted transition-colors hover:text-red-500" aria-label="Remove"><Trash2 size={16} /></button>
+                  )}
                 </div>
               </div>
               <p className="mt-3 font-semibold text-content">{u.firstName} {u.lastName}</p>
@@ -278,7 +281,7 @@ export default function StaffManagement() {
 
       {/* ── Edit staff modal ── */}
       <Modal open={editOpen} onClose={() => setEditOpen(false)} title={`Edit ${editingUser?.firstName ?? ''} ${editingUser?.lastName ?? ''}`}>
-        <form onSubmit={(e) => { e.preventDefault(); if (!editingUser) return; updateStaff.mutate({ id: editingUser.id, data: { firstName: editForm.firstName, lastName: editForm.lastName, email: editForm.email, phone: editForm.phone || null, role: editForm.role, assignedSpotId: editForm.assignedSpotId || null } }); }} className="space-y-4">
+        <form onSubmit={(e) => { e.preventDefault(); if (!editingUser) return; updateStaff.mutate({ id: editingUser.id, data: { firstName: editForm.firstName, lastName: editForm.lastName, email: editForm.email, phone: editForm.phone || null, role: editForm.role, assignedSpotId: editForm.role === 'ADMIN' ? null : (editForm.assignedSpotId || null) } }); }} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <Input label="First name" value={editForm.firstName} onChange={(e) => setEditForm({ ...editForm, firstName: e.target.value })} required />
             <Input label="Last name" value={editForm.lastName} onChange={(e) => setEditForm({ ...editForm, lastName: e.target.value })} required />
@@ -288,21 +291,24 @@ export default function StaffManagement() {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="mb-1.5 block text-sm font-medium text-content">Role</label>
-              <select value={editForm.role} onChange={(e) => setEditForm({ ...editForm, role: e.target.value as Role })} className="input-base">
+              <select value={editForm.role} onChange={(e) => setEditForm({ ...editForm, role: e.target.value as Role })} className="input-base" disabled={editingSelf}>
                 {STAFF_ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
               </select>
+              {editingSelf && <p className="mt-1 text-[10px] text-muted">You cannot change your own role.</p>}
             </div>
             <Input label="New password (leave blank to keep)" type="password" value={editForm.password} onChange={(e) => setEditForm({ ...editForm, password: e.target.value })} minLength={6} />
           </div>
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-content">Assigned vending spot</label>
-            <select value={editForm.assignedSpotId} onChange={(e) => setEditForm({ ...editForm, assignedSpotId: e.target.value })} className="input-base">
-              <option value="">-- No spot (sees all orders) --</option>
-              {(spots ?? []).map((s) => (
-                <option key={s.id} value={s.id}>{s.name} — {s.location}</option>
-              ))}
-            </select>
-          </div>
+          {editForm.role !== 'ADMIN' && (
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-content">Assigned vending spot</label>
+              <select value={editForm.assignedSpotId} onChange={(e) => setEditForm({ ...editForm, assignedSpotId: e.target.value })} className="input-base">
+                <option value="">-- No spot (sees all orders) --</option>
+                {(spots ?? []).map((s) => (
+                  <option key={s.id} value={s.id}>{s.name} — {s.location}</option>
+                ))}
+              </select>
+            </div>
+          )}
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="ghost" onClick={() => setEditOpen(false)}>Cancel</Button>
             <Button type="submit" disabled={updateStaff.isPending}>{updateStaff.isPending ? 'Saving…' : 'Save changes'}</Button>

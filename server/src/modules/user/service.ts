@@ -95,7 +95,18 @@ export const UserService = {
   },
 
   // Update a user's role, status, profile fields, or assigned spot.
-  async update(id: string, data: Partial<StaffInput> & { status?: string }) {
+  // `requester` is the authenticated actor — used to block self-lockout.
+  async update(
+    id: string,
+    data: Partial<StaffInput> & { status?: string },
+    requester?: { id: string; role: string },
+  ) {
+    // An admin must not strip their own ADMIN role — it would lock them (and
+    // possibly everyone) out of the administration console.
+    if (requester && requester.id === id && data.role !== undefined && data.role !== 'ADMIN') {
+      throw new AppError('You cannot change your own role', 400);
+    }
+
     const allowed: Record<string, unknown> = {};
     if (data.firstName !== undefined) allowed.firstName = data.firstName;
     if (data.lastName !== undefined) allowed.lastName = data.lastName;
@@ -112,8 +123,11 @@ export const UserService = {
     });
   },
 
-  // Permanently delete a user.
-  async delete(id: string) {
+  // Permanently delete a user. An admin cannot delete their own account.
+  async delete(id: string, requester?: { id: string; role: string }) {
+    if (requester && requester.id === id) {
+      throw new AppError('You cannot delete your own account', 400);
+    }
     return prisma.user.delete({ where: { id } });
   },
 };

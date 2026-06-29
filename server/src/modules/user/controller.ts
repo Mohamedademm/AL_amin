@@ -36,7 +36,7 @@ export const UserController = {
   // PATCH /api/users/:id — update role, status or profile.
   async update(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const user = await UserService.update(req.params.id as string, req.body);
+      const user = await UserService.update(req.params.id as string, req.body, req.user!);
       res.json({ status: 'success', data: user });
     } catch (error) {
       next(error);
@@ -46,7 +46,7 @@ export const UserController = {
   // DELETE /api/users/:id — remove an account.
   async delete(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      await UserService.delete(req.params.id as string);
+      await UserService.delete(req.params.id as string, req.user!);
       res.status(204).send();
     } catch (error) {
       next(error);
