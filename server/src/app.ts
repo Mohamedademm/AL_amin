@@ -90,9 +90,16 @@ const authLimiter = rateLimit({
   },
 });
 
-// Health Check
+// Health Check — also reports the deployed commit/branch (Vercel injects these
+// at build time) so you can verify *which* version is actually live in prod.
 app.get("/health", (req, res) => {
-  res.status(200).json({ status: "OK", timestamp: new Date().toISOString() });
+  res.status(200).json({
+    status: "OK",
+    timestamp: new Date().toISOString(),
+    commit: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? "local",
+    branch: process.env.VERCEL_GIT_COMMIT_REF ?? "local",
+    env: ENV.NODE_ENV,
+  });
 });
 
 // API Routes
