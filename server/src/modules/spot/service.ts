@@ -9,10 +9,13 @@ interface SpotInput {
 }
 
 export const SpotService = {
-  // List all vending spots (boutiques) with their stock count.
+  // List all vending spots (boutiques) with their stock count and manager info.
   async listAll() {
     return prisma.vendingSpot.findMany({
-      include: { _count: { select: { inventory: true, orders: true } } },
+      include: {
+        _count: { select: { inventory: true, orders: true } },
+        manager: { select: { id: true, firstName: true, lastName: true, email: true } },
+      },
       orderBy: { name: 'asc' },
     });
   },
