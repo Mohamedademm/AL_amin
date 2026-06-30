@@ -11,6 +11,7 @@ import type {
   Order,
   OrderStatus,
   Product,
+  RestockForecast,
   Role,
   TrendPoint,
   User,
@@ -166,6 +167,17 @@ export const dashboardApi = {
   stats: () => unwrap<DashboardStats>(http.get("/dashboard/stats")),
   trends: () => unwrap<TrendPoint[]>(http.get("/dashboard/trends")),
   lowStock: () => unwrap<LowStockItem[]>(http.get("/dashboard/low-stock")),
+};
+
+export const restockApi = {
+  // Predicted stockouts + suggested reorder per boutique. Optionally narrowed
+  // to one spot (managers are scoped server-side regardless of this param).
+  forecast: (spotId?: string) =>
+    unwrap<RestockForecast>(
+      http.get("/restock/forecast", {
+        params: spotId ? { spotId } : undefined,
+      }),
+    ),
 };
 
 export const discountApi = {

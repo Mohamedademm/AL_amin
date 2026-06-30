@@ -142,6 +142,35 @@ export interface TrendPoint {
   revenue: number;
 }
 
+// ── Smart Restock (predictive replenishment) ────────────────────────
+export type RestockRisk = "CRITICAL" | "WARNING" | "HEALTHY" | "IDLE";
+
+export interface RestockItem {
+  productId: string;
+  productName: string;
+  spotId: string;
+  spotName: string;
+  isWarehouse: boolean;
+  currentQuantity: number;
+  velocityPerDay: number;
+  daysToStockout: number | null;
+  predictedStockoutDate: string | null;
+  suggestedReorder: number;
+  risk: RestockRisk;
+}
+
+export interface RestockForecast {
+  generatedAt: string;
+  params: {
+    windowDays: number;
+    coverDays: number;
+    leadTimeDays: number;
+    safetyDays: number;
+  };
+  summary: { critical: number; warning: number; healthy: number; idle: number };
+  items: RestockItem[];
+}
+
 export interface CartItem {
   product: Product;
   quantity: number;

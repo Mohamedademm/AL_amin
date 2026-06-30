@@ -61,12 +61,27 @@ Items checked `[x]` are done; `[~]` in progress.
 - [x] **P1** Global React **ErrorBoundary** + 500 fallback page (catches any render crash) — *done*
 
 ## 🧪 Quality / DevOps
-- [x] **P1** Tests: Vitest (client, 14) + backend integration suite (node:test, 15) — *done*; see [docs/TEST_REPORT.md](docs/TEST_REPORT.md)
+- [x] **P1** Tests: Vitest (client, 14) + backend integration suite (node:test, 22) — *done*; see [docs/TEST_REPORT.md](docs/TEST_REPORT.md)
 - [ ] **P1** Browser E2E automation (Playwright) + coverage thresholds
 - [x] **P1** CI (GitHub Actions): typecheck + build + test on PR — *done (`.github/workflows/ci.yml`)*
 - [x] **P2** ESLint on server — *done (eslint.config.js, `npm run lint` in CI)*
 - [ ] **P2** Dockerfile for client + server; full `docker compose` app stack
 - [x] **P2** Error monitoring (Sentry) + structured logging (pino) — *done (pino + pino-http replacing morgan; sensitive fields redacted)*
+
+## 🚀 Innovation roadmap (high-end features)
+**Phase 1 — zero external deps**
+- [x] **P1** **Smart Restock** — predict per-boutique stockout date from sales velocity + suggested reorder-up-to qty — *done (`GET /api/restock/forecast`, control-tower widget on the admin dashboard, manager-scoped)*
+- [ ] **P1** Loyalty tiers (Bronze/Silver/Gold) auto-computed from lifetime spend → auto-discounts
+- [ ] **P2** Surge / auto-pricing rules (overstock liquidation, scarcity markup) on the discount engine
+- [ ] **P2** Branded PDF invoices on order ACCEPTED (pdfkit)
+
+**Phase 2 — free libs + migrations**
+- [ ] **P2** Interactive map of vending spots (Leaflet + OSM; needs `lat/lng` migration + geocoding)
+- [ ] **P2** PWA + web-push notifications (VAPID, self-hosted)
+- [ ] **P2** QR scanner for order pickup / inventory (html5-qrcode)
+
+**Phase 3 — external accounts (keys required)**
+- [ ] **P2** Multichannel alerts (Resend email / Twilio SMS) + invoice email delivery
 
 ---
 

@@ -227,3 +227,21 @@ test('dashboard trends return a 14-day daily series', async () => {
   const point = r.json.data[0];
   assert.ok('date' in point && 'orders' in point && 'revenue' in point);
 });
+
+// ── Smart Restock (predictive replenishment) ────────────────────────
+test('admin can read the smart restock forecast', async () => {
+  const r = await call('/api/restock/forecast', { token: adminToken });
+  assert.equal(r.status, 200);
+  assert.ok(Array.isArray(r.json.data.items), 'forecast exposes an items array');
+  assert.ok(r.json.data.summary && typeof r.json.data.summary.critical === 'number');
+  assert.ok(r.json.data.params && r.json.data.params.windowDays > 0);
+  if (r.json.data.items.length) {
+    const it = r.json.data.items[0];
+    assert.ok('risk' in it && 'suggestedReorder' in it && 'daysToStockout' in it);
+  }
+});
+
+test('client is forbidden from the restock forecast (403)', async () => {
+  const r = await call('/api/restock/forecast', { token: clientToken });
+  assert.equal(r.status, 403);
+});

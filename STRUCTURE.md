@@ -29,7 +29,7 @@ directories are added, removed, or moved.
     - `config/`: Env + Prisma client + Google OAuth (passport) + Multer file upload (`database.ts`, `env.ts`, `passport.ts`, `upload.ts`)
     - `lib/`: Cross-cutting logic (`pricing.ts` — discount engine; `validation.ts` — Zod schemas + `validate` middleware + email/password rules; `logger.ts` — pino structured logger; `csv.ts` — RFC-4180 CSV serializer; `requestContext.ts` — AsyncLocalStorage for audit)
     - `middleware/`: `auth` (JWT via cookie or Bearer + RBAC), `errorHandler`
-    - `modules/`: Domain modules, each with `routes` / `controller` / `service` (`auth`, `product`, `category`, `order`, `inventory`, `spot`, `user`, `dashboard`, `discount`, `audit`; `order` also has `cleanup.ts` — interval-based order expiry, started by the local server only)
+    - `modules/`: Domain modules, each with `routes` / `controller` / `service` (`auth`, `product`, `category`, `order`, `inventory`, `spot`, `user`, `dashboard`, `discount`, `audit`, `restock` — predictive replenishment forecast; `order` also has `cleanup.ts` — interval-based order expiry, started by the local server only)
     - `app.ts`: Builds & exports the configured Express app (no `listen`) — shared by local + serverless; mounts passport + `/uploads` static
     - `server.ts`: Local entry — imports `app`, starts the cleanup interval, calls `listen`
   - `api/index.ts`: Vercel serverless function — `export default app`

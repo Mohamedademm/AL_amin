@@ -60,7 +60,9 @@ stealth `endsAt`/`maxQuantity`), `AuditLog`, `Event`.
 - `lib/` `pricing.ts` (discount engine), `validation.ts` (email/password rules).
 - `middleware/` `auth` (JWT verify + `authorize(roles)`), `errorHandler` (`AppError`).
 - `modules/<name>/` each has `routes` + `controller` + `service`:
-  `auth, product, category, order, inventory, spot, user, dashboard, discount, audit`.
+  `auth, product, category, order, inventory, spot, user, dashboard, discount, audit, restock`.
+- `restock` = **Smart Restock**: forecasts each boutique's stockout date from recent
+  sales velocity (units sold ÷ window) and proposes a reorder-up-to quantity.
 - `server.ts` mounts everything under `/api/*`, adds helmet/CORS/rate-limit.
 
 ### API (base `/api`, envelope `{ status, data }`)
@@ -69,7 +71,9 @@ stealth `endsAt`/`maxQuantity`), `AuditLog`, `Event`.
 `GET|PUT /inventory` · `GET /spots`, CRUD · `GET|POST|PATCH|DELETE /users` (admin;
 self-guard: an admin cannot change their own role or delete their own account → 400) ·
 `GET /dashboard/stats`, `GET /dashboard/low-stock` · `GET /orders/export` (CSV, staff) ·
-`GET|POST|PATCH|DELETE /discounts` · `GET /audit` (admin).
+`GET|POST|PATCH|DELETE /discounts` · `GET /audit` (admin) ·
+`GET /restock/forecast` (admin/mgr; predicted stockouts + suggested reorder per spot —
+a MANAGER is scoped to the boutique they manage, ADMIN may narrow with `?spotId=`).
 
 ## 7. Frontend layout (`client/src`)
 - `context/` `ThemeContext` (light/dark), `AuthContext` (session restore via `/auth/me`),

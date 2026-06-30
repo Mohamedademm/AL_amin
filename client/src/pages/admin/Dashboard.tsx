@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import {
   Wallet,
   ShoppingBag,
@@ -13,6 +15,7 @@ import { PageHeader } from "../../components/ui/PageHeader";
 import { StatCard } from "../../components/ui/StatCard";
 import { StatusBadge } from "../../components/ui/Badge";
 import { DashboardTrends } from "../../components/dashboard/DashboardTrends";
+import { SmartRestock } from "../../components/dashboard/SmartRestock";
 import { PageLoader } from "../../components/ui/Spinner";
 import { formatPrice, formatDate } from "../../utils/format";
 import type { OrderStatus } from "../../types";
@@ -27,6 +30,8 @@ const statusOrder: OrderStatus[] = [
 ];
 
 export default function AdminDashboard() {
+  const [timeRange, setTimeRange] = useState("all");
+
   const { data: stats, isLoading } = useQuery({
     queryKey: ["dashboard"],
     queryFn: dashboardApi.stats,
@@ -46,6 +51,18 @@ export default function AdminDashboard() {
       <PageHeader
         title="HQ Overview"
         subtitle="System-wide performance, revenue and network health."
+        action={
+          <select 
+            value={timeRange} 
+            onChange={(e) => setTimeRange(e.target.value)} 
+            className="input-base text-sm py-2 h-auto cursor-pointer"
+          >
+            <option value="today">Today</option>
+            <option value="week">This Week</option>
+            <option value="month">This Month</option>
+            <option value="all">All Time</option>
+          </select>
+        }
       />
 
       {lowStockItems && lowStockItems.length > 0 && (
@@ -59,15 +76,17 @@ export default function AdminDashboard() {
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
             {lowStockItems.slice(0, 12).map((it) => (
-              <span
+              <Link
                 key={it.id}
-                className="rounded-full border border-amber-500/30 bg-surface px-3 py-1 text-xs"
+                to={`/staff/inventory`}
+                title="Go to Inventory"
+                className="group flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-surface px-3 py-1 text-xs transition-colors hover:border-amber-500/60 hover:bg-amber-500/5"
               >
-                {it.productName} · {it.spotName}{" "}
-                <span className="font-mono font-semibold text-amber-500">
+                <span>{it.productName} · {it.spotName}</span>
+                <span className="font-mono font-semibold text-amber-500 group-hover:text-amber-600">
                   {it.quantity}
                 </span>
-              </span>
+              </Link>
             ))}
           </div>
         </div>
@@ -124,6 +143,8 @@ export default function AdminDashboard() {
       </div>
 
       <DashboardTrends />
+
+      <SmartRestock />
 
       <div className="mt-6 grid gap-6 lg:grid-cols-5">
         <div className="rounded-2xl border border-line bg-surface p-6 lg:col-span-2">
