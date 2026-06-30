@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN     "lifetimeSpend" DECIMAL(12,2) NOT NULL DEFAULT 0,
+ADD COLUMN     "loyaltyTier" TEXT NOT NULL DEFAULT 'BRONZE';

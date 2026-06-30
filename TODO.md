@@ -61,7 +61,7 @@ Items checked `[x]` are done; `[~]` in progress.
 - [x] **P1** Global React **ErrorBoundary** + 500 fallback page (catches any render crash) — *done*
 
 ## 🧪 Quality / DevOps
-- [x] **P1** Tests: Vitest (client, 14) + backend integration suite (node:test, 22) — *done*; see [docs/TEST_REPORT.md](docs/TEST_REPORT.md)
+- [x] **P1** Tests: Vitest (client, 14) + backend integration suite (node:test, 24) — *done*; see [docs/TEST_REPORT.md](docs/TEST_REPORT.md)
 - [ ] **P1** Browser E2E automation (Playwright) + coverage thresholds
 - [x] **P1** CI (GitHub Actions): typecheck + build + test on PR — *done (`.github/workflows/ci.yml`)*
 - [x] **P2** ESLint on server — *done (eslint.config.js, `npm run lint` in CI)*
@@ -71,7 +71,7 @@ Items checked `[x]` are done; `[~]` in progress.
 ## 🚀 Innovation roadmap (high-end features)
 **Phase 1 — zero external deps**
 - [x] **P1** **Smart Restock** — predict per-boutique stockout date from sales velocity + suggested reorder-up-to qty — *done (`GET /api/restock/forecast`, control-tower widget on the admin dashboard, manager-scoped)*
-- [ ] **P1** Loyalty tiers (Bronze/Silver/Gold) auto-computed from lifetime spend → auto-discounts
+- [x] **P1** Loyalty tiers (Bronze/Silver/Gold/Platinum) auto-computed from lifetime spend → auto-discounts — *done (`lifetimeSpend` grows on ACCEPTED, tier % stacks at checkout, `GET /api/loyalty`, LoyaltyCard on profile)*
 - [ ] **P2** Surge / auto-pricing rules (overstock liquidation, scarcity markup) on the discount engine
 - [ ] **P2** Branded PDF invoices on order ACCEPTED (pdfkit)
 

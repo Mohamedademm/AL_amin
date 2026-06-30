@@ -3,6 +3,7 @@ import { AppError } from "../../middleware/errorHandler";
 import { OrderCreateInput } from "./types";
 import { OrderStatus, Prisma } from "../../generated/prisma";
 import { getActiveDiscounts, discountFor } from "../../lib/pricing";
+import { loyaltyDiscountPercent, tierFor } from "../../lib/loyalty";
 
 // Allowed status transitions enforcing the order state machine.
 const TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
@@ -71,8 +72,14 @@ export const OrderService = {
     }
 
     // Price each line from the live product price minus any active discount,
-    // so the charged amount matches what the storefront displayed.
+    // so the charged amount matches what the storefront displayed. A loyalty
+    // tier (from the client's lifetime spend) stacks an extra % off on top.
     const discounts = await getActiveDiscounts();
+    const buyer = await prisma.user.findUnique({
+      where: { id: clientId },
+      select: { lifetimeSpend: true },
+    });
+    const loyaltyPct = loyaltyDiscountPercent(Number(buyer?.lifetimeSpend ?? 0));
     const productMap = new Map(products.map((p) => [p.id, p]));
     let total = new Prisma.Decimal(0);
 
@@ -83,10 +90,12 @@ export const OrderService = {
         throw new AppError("Quantity must be greater than zero", 400);
       const product = productMap.get(i.productId)!;
       const { percentage, discountId } = discountFor(product, discounts);
-      const price =
+      let price =
         percentage > 0
           ? product.price.mul(100 - percentage).div(100)
           : product.price;
+      // Apply the loyalty tier discount on top of any product/category deal.
+      if (loyaltyPct > 0) price = price.mul(100 - loyaltyPct).div(100);
       total = total.add(price.mul(i.quantity));
       if (discountId) {
         discountUsageDelta.set(
@@ -249,6 +258,20 @@ export const OrderService = {
           }
         }
         await tx.order.update({ where: { id }, data: { status: next } });
+
+        // Loyalty: recognise revenue once, on ACCEPTED, and re-evaluate the
+        // buyer's tier from their new lifetime spend.
+        if (next === "ACCEPTED") {
+          const buyer = await tx.user.update({
+            where: { id: order.clientId },
+            data: { lifetimeSpend: { increment: order.totalAmount } },
+            select: { lifetimeSpend: true },
+          });
+          await tx.user.update({
+            where: { id: order.clientId },
+            data: { loyaltyTier: tierFor(Number(buyer.lifetimeSpend)).name },
+          });
+        }
       });
     } else {
       await prisma.order.update({ where: { id }, data: { status: next } });

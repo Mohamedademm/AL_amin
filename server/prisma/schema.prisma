@@ -36,6 +36,9 @@ model User {
   role           RoleName     @default(CLIENT)
   failedAttempts Int          @default(0)
   lockedUntil    DateTime?
+  // Loyalty: cumulative accepted-order spend drives the gamified tier.
+  lifetimeSpend  Decimal      @default(0) @db.Decimal(12, 2)
+  loyaltyTier    String       @default("BRONZE")
   assignedSpotId String?
   assignedSpot   VendingSpot? @relation("AssignedStaff", fields: [assignedSpotId], references: [id])
   managedSpot    VendingSpot? @relation("ManagedSpot")

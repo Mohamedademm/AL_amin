@@ -245,3 +245,30 @@ test('client is forbidden from the restock forecast (403)', async () => {
   const r = await call('/api/restock/forecast', { token: clientToken });
   assert.equal(r.status, 403);
 });
+
+// ── Loyalty (gamified tiers) ────────────────────────────────────────
+test('loyalty status exposes the caller tier + ladder', async () => {
+  const r = await call('/api/loyalty', { token: clientToken });
+  assert.equal(r.status, 200);
+  assert.ok(typeof r.json.data.tier === 'string', 'has a tier');
+  assert.ok(typeof r.json.data.lifetimeSpend === 'number');
+  assert.ok(Array.isArray(r.json.data.tiers) && r.json.data.tiers.length >= 2, 'ladder present');
+});
+
+test('accepting an order grows the buyer lifetime spend (loyalty)', async () => {
+  const before = (await call('/api/loyalty', { token: clientToken })).json.data.lifetimeSpend;
+  const products = (await call('/api/products')).json.data;
+  const spots = (await call('/api/spots', { token: adminToken })).json.data;
+  const product = products[0];
+  const spot = spots.find((s) => s.name !== 'Central Warehouse') || spots[0];
+  await call('/api/inventory', { method: 'PUT', token: adminToken, body: { productId: product.id, spotId: spot.id, quantity: 50 } });
+
+  const order = await call('/api/orders', { method: 'POST', token: clientToken, body: { items: [{ productId: product.id, quantity: 2 }], address: 'A', phone: '+216 0', spotId: spot.id } });
+  const id = order.json.data.id;
+  const total = Number(order.json.data.totalAmount);
+  await call(`/api/orders/${id}/status`, { method: 'PATCH', token: adminToken, body: { status: 'VERIFYING' } });
+  await call(`/api/orders/${id}/status`, { method: 'PATCH', token: adminToken, body: { status: 'ACCEPTED' } });
+
+  const after = (await call('/api/loyalty', { token: clientToken })).json.data.lifetimeSpend;
+  assert.ok(Math.abs(after - (before + total)) < 0.01, 'lifetime spend increased by the order total exactly once');
+});

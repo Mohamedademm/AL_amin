@@ -8,6 +8,7 @@ import type {
   Discount,
   DiscountScope,
   InventoryRecord,
+  LoyaltyStatus,
   Order,
   OrderStatus,
   Product,
@@ -167,6 +168,11 @@ export const dashboardApi = {
   stats: () => unwrap<DashboardStats>(http.get("/dashboard/stats")),
   trends: () => unwrap<TrendPoint[]>(http.get("/dashboard/trends")),
   lowStock: () => unwrap<LowStockItem[]>(http.get("/dashboard/low-stock")),
+};
+
+export const loyaltyApi = {
+  // The current user's loyalty tier, progress, and the full tier ladder.
+  status: () => unwrap<LoyaltyStatus>(http.get("/loyalty")),
 };
 
 export const restockApi = {

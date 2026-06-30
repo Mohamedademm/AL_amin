@@ -7,6 +7,7 @@ import { Button, buttonClasses } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Modal } from '../../components/ui/Modal';
 import { formatDate, initials } from '../../utils/format';
+import { LoyaltyCard } from '../../components/loyalty/LoyaltyCard';
 
 export default function Profile() {
   const { user, updateProfile, logout } = useAuth();
@@ -61,18 +62,21 @@ export default function Profile() {
       <p className="mt-2 text-muted">Manage your account details and preferences.</p>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-3">
-        <div className="rounded-2xl border border-line bg-surface p-6 text-center">
-          <span className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-primary/15 text-2xl font-bold text-primary">
-            {initials(user.firstName, user.lastName)}
-          </span>
-          <h2 className="mt-4 text-xl font-semibold">{user.firstName} {user.lastName}</h2>
-          <p className="font-mono text-xs uppercase tracking-widest text-primary">{user.role}</p>
-          <Link to="/orders" className={buttonClasses('outline', 'md', 'mt-6 w-full')}>
-            <Package size={16} /> My orders
-          </Link>
-          <Button variant="ghost" className="mt-2 w-full text-red-500 hover:bg-red-500/10" onClick={logout}>
-            Log out
-          </Button>
+        <div className="space-y-6">
+          <div className="rounded-2xl border border-line bg-surface p-6 text-center">
+            <span className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-primary/15 text-2xl font-bold text-primary">
+              {initials(user.firstName, user.lastName)}
+            </span>
+            <h2 className="mt-4 text-xl font-semibold">{user.firstName} {user.lastName}</h2>
+            <p className="font-mono text-xs uppercase tracking-widest text-primary">{user.role}</p>
+            <Link to="/orders" className={buttonClasses('outline', 'md', 'mt-6 w-full')}>
+              <Package size={16} /> My orders
+            </Link>
+            <Button variant="ghost" className="mt-2 w-full text-red-500 hover:bg-red-500/10" onClick={logout}>
+              Log out
+            </Button>
+          </div>
+          {user.role === 'CLIENT' && <LoyaltyCard />}
         </div>
 
         <div className="rounded-2xl border border-line bg-surface p-6 lg:col-span-2">

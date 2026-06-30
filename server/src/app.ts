@@ -22,6 +22,7 @@ import dashboardRoutes from "./modules/dashboard/routes";
 import discountRoutes from "./modules/discount/routes";
 import auditRoutes from "./modules/audit/routes";
 import restockRoutes from "./modules/restock/routes";
+import loyaltyRoutes from "./modules/loyalty/routes";
 
 const app = express();
 
@@ -116,6 +117,7 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/discounts", discountRoutes);
 app.use("/api/audit", auditRoutes);
 app.use("/api/restock", restockRoutes);
+app.use("/api/loyalty", loyaltyRoutes);
 
 // 404 Handler
 app.use((req, res, next) => {

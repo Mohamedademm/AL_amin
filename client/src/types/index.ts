@@ -20,6 +20,25 @@ export interface User {
   status: string;
   createdAt: string;
   assignedSpotId?: string | null;
+  lifetimeSpend?: string | number;
+  loyaltyTier?: string;
+}
+
+// ── Loyalty (gamified tiers) ────────────────────────────────────────
+export interface LoyaltyTierDef {
+  name: string;
+  minSpend: number;
+  discountPercent: number;
+}
+
+export interface LoyaltyStatus {
+  lifetimeSpend: number;
+  tier: string;
+  discountPercent: number;
+  next: { name: string; minSpend: number; discountPercent: number } | null;
+  remaining: number;
+  progress: number;
+  tiers: LoyaltyTierDef[];
 }
 
 export interface Category {
