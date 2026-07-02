@@ -22,6 +22,8 @@ interface DataTableProps<T> {
   toolbar?: ReactNode; // extra controls aligned with the search field
   emptyIcon?: ReactNode;
   emptyText?: string;
+  externalQuery?: string;
+  onExternalQueryChange?: (query: string) => void;
 }
 
 // Reusable data table: built-in search, column sorting, pagination,
@@ -29,8 +31,12 @@ interface DataTableProps<T> {
 export function DataTable<T>({
   data, columns, rowKey, loading = false, pageSize = 8,
   search, searchPlaceholder = 'Search…', toolbar, emptyIcon, emptyText = 'Nothing here yet.',
+  externalQuery, onExternalQueryChange
 }: DataTableProps<T>) {
-  const [query, setQuery] = useState('');
+  const [internalQuery, setInternalQuery] = useState('');
+  const query = externalQuery !== undefined ? externalQuery : internalQuery;
+  const setQuery = onExternalQueryChange || setInternalQuery;
+
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [page, setPage] = useState(1);

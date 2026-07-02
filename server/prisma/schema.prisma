@@ -189,6 +189,7 @@ model Discount {
   productId   String?
   product     Product?  @relation(fields: [productId], references: [id])
   active       Boolean   @default(true)
+  auto         Boolean   @default(false) // created/managed by the auto-pricing engine
   startsAt     DateTime  @default(now())
   endsAt       DateTime? // hidden from clients (stealth)
   maxQuantity  Int?      // hidden from clients (stealth cap)

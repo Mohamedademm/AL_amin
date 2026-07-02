@@ -112,6 +112,18 @@ export const orderApi = {
     a.click();
     URL.revokeObjectURL(url);
   },
+  // Download a PDF invoice for a specific order (triggers a browser download).
+  downloadInvoice: async (id: string) => {
+    const res = await http.get(`/orders/${id}/invoice`, { responseType: "blob" });
+    const url = URL.createObjectURL(res.data as Blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `invoice-${id.slice(0, 8).toUpperCase()}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  },
 };
 
 export const inventoryApi = {
@@ -199,6 +211,15 @@ export const discountApi = {
   setActive: (id: string, active: boolean) =>
     unwrap<Discount>(http.patch(`/discounts/${id}`, { active })),
   remove: (id: string) => http.delete(`/discounts/${id}`),
+  // Run the overstock-liquidation engine; returns a run summary.
+  runAutoPricing: () =>
+    unwrap<{
+      evaluated: number;
+      created: number;
+      retired: number;
+      thresholdUnits: number;
+      clearancePercent: number;
+    }>(http.post("/discounts/auto-pricing")),
 };
 
 export const auditApi = {

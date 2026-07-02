@@ -15,6 +15,7 @@ import {
   Tag,
   ScrollText,
   Layers,
+  Brain,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { Logo, LogoMark } from "../brand/Logo";
@@ -62,6 +63,7 @@ const adminNav: NavItem[] = [
   { to: "/admin/users", label: "Users", icon: <Users size={18} /> },
   { to: "/admin/staff", label: "Staff", icon: <UserCog size={18} /> },
   { to: "/admin/pricing", label: "Pricing", icon: <Tag size={18} /> },
+  { to: "/admin/smart-restock", label: "Smart Restock", icon: <Brain size={18} /> },
   { to: "/admin/audit", label: "Audit Log", icon: <ScrollText size={18} /> },
   { to: "/admin/settings", label: "Settings", icon: <Settings size={18} /> },
 ];

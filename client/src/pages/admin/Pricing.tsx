@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, Power, Tag, Clock, Hash } from "lucide-react";
+import { Plus, Trash2, Power, Tag, Clock, Hash, Zap } from "lucide-react";
 import { discountApi, categoryApi, productApi } from "../../services/api";
 import { PageHeader } from "../../components/ui/PageHeader";
 import { Badge } from "../../components/ui/Badge";
@@ -80,6 +80,17 @@ export default function Pricing() {
       toast.success("Discount removed");
     },
   });
+  // Run the overstock-liquidation engine and report what changed.
+  const autoPrice = useMutation({
+    mutationFn: () => discountApi.runAutoPricing(),
+    onSuccess: (r) => {
+      invalidate();
+      toast.success(
+        `Auto-pricing: ${r.created} clearance deal(s) added, ${r.retired} retired (${r.evaluated} products checked).`,
+      );
+    },
+    onError: () => toast.error("Auto-pricing run failed."),
+  });
 
   // Confirm before removing a pricing rule.
   const askRemove = async (d: Discount) => {
@@ -102,6 +113,17 @@ export default function Pricing() {
       <PageHeader
         title="Dynamic Pricing"
         subtitle="Apply category or product discounts. Expiry & quantity caps stay hidden from clients."
+        action={
+          <Button
+            variant="outline"
+            onClick={() => autoPrice.mutate()}
+            disabled={autoPrice.isPending}
+            title="Auto-liquidate overstocked products"
+          >
+            <Zap size={16} />
+            {autoPrice.isPending ? "Running…" : "Auto-price overstock"}
+          </Button>
+        }
       />
 
       <div className="grid gap-6 lg:grid-cols-5">
@@ -233,8 +255,13 @@ export default function Pricing() {
                     −{d.percentage}%
                   </span>
                   <div>
-                    <p className="font-medium text-content">
+                    <p className="flex items-center gap-2 font-medium text-content">
                       {d.category?.name || d.product?.name || "Unknown"}
+                      {d.auto && (
+                        <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
+                          <Zap size={10} /> Auto
+                        </span>
+                      )}
                     </p>
                     <p className="text-xs text-muted">
                       {d.categoryId ? "Category" : "Product"} discount

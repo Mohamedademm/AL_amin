@@ -1,12 +1,13 @@
 import { useState, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Save, Boxes } from "lucide-react";
+import { Save, Boxes, ScanBarcode } from "lucide-react";
 import { inventoryApi, spotApi } from "../../services/api";
 import { PageHeader } from "../../components/ui/PageHeader";
 import { Badge } from "../../components/ui/Badge";
 import { DataTable, type Column } from "../../components/ui/DataTable";
 import { useToast } from "../../context/ToastContext";
 import { cn } from "../../lib/cn";
+import { QRScanner } from "../../components/scanner/QRScanner";
 import type { InventoryRecord } from "../../types";
 
 const LOW = 10;
@@ -16,6 +17,8 @@ export default function Inventory() {
   const toast = useToast();
   const [spotId, setSpotId] = useState("");
   const [lowOnly, setLowOnly] = useState(false);
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const { data: spots } = useQuery({
     queryKey: ["spots"],
     queryFn: spotApi.list,
@@ -145,8 +148,16 @@ export default function Inventory() {
         searchPlaceholder="Search products…"
         emptyIcon={<Boxes size={32} />}
         emptyText="No stock records."
+        externalQuery={searchQuery}
+        onExternalQueryChange={setSearchQuery}
         toolbar={
           <>
+            <button
+              onClick={() => setScannerOpen(true)}
+              className="flex items-center gap-1.5 rounded-lg border border-primary text-primary bg-primary/10 px-3 py-1.5 text-sm font-medium transition-all hover:bg-primary hover:text-primary-contrast"
+            >
+              <ScanBarcode size={16} /> Scanner
+            </button>
             <button
               onClick={() => setLowOnly((v) => !v)}
               className={cn(
@@ -172,6 +183,15 @@ export default function Inventory() {
             </select>
           </>
         }
+      />
+      
+      <QRScanner
+        open={scannerOpen}
+        onClose={() => setScannerOpen(false)}
+        onScan={(text) => {
+          setSearchQuery(text);
+          toast.success(`Scanned: ${text}`);
+        }}
       />
     </div>
   );

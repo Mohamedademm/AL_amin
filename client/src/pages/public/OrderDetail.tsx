@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -11,6 +12,7 @@ import {
   Store,
   Truck,
   Zap,
+  FileText,
 } from "lucide-react";
 import { orderApi } from "../../services/api";
 import { useConfirm } from "../../context/ConfirmContext";
@@ -36,6 +38,7 @@ export default function OrderDetail() {
   const confirm = useConfirm();
   const toast = useToast();
   const navigate = useNavigate();
+  const [downloadBusy, setDownloadBusy] = useState(false);
 
   const { data: order, isLoading } = useQuery({
     queryKey: ["order", id],
@@ -253,6 +256,26 @@ export default function OrderDetail() {
               onClick={askCancel}
             >
               {cancel.isPending ? "Cancelling…" : "Cancel order"}
+            </Button>
+          )}
+          {["ACCEPTED", "SHIPPING", "DELIVERED"].includes(order.status) && (
+            <Button
+              variant="outline"
+              className="mt-4 w-full"
+              disabled={downloadBusy}
+              onClick={async () => {
+                setDownloadBusy(true);
+                try {
+                  await orderApi.downloadInvoice(order.id);
+                } catch {
+                  toast.error("Could not download invoice");
+                } finally {
+                  setDownloadBusy(false);
+                }
+              }}
+            >
+              <FileText size={16} />
+              {downloadBusy ? "Generating…" : "Download Invoice (PDF)"}
             </Button>
           )}
           <Link

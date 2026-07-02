@@ -70,6 +70,7 @@ export interface Discount {
   categoryId?: string | null;
   productId?: string | null;
   active: boolean;
+  auto?: boolean;
   startsAt: string;
   endsAt?: string | null;
   maxQuantity?: number | null;

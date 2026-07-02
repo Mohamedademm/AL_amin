@@ -70,4 +70,81 @@ export const DiscountService = {
     await prisma.discount.delete({ where: { id } });
     await AuditService.log({ userId, action: 'DISCOUNT_REMOVED', entity: 'Discount', entityId: id });
   },
+
+  // Auto-pricing pass: liquidate overstock by auto-creating a clearance discount
+  // for products whose total stock crosses a threshold, and retire that discount
+  // once stock normalises. Only ever touches discounts it owns (`auto: true`),
+  // so manual pricing is never disturbed. Idempotent — safe to run repeatedly.
+  async runAutoPricing(userId: string) {
+    const OVERSTOCK_UNITS = 80; // total units across spots that counts as overstock
+    const CLEARANCE_PERCENT = 20; // discount applied to liquidate overstock
+
+    // Total stock per product, and the products' current auto-discount (if any).
+    const [stockByProduct, autoDiscounts] = await Promise.all([
+      prisma.inventory.groupBy({
+        by: ['productId'],
+        _sum: { quantity: true },
+      }),
+      prisma.discount.findMany({
+        where: { auto: true, productId: { not: null } },
+      }),
+    ]);
+
+    const autoByProduct = new Map(autoDiscounts.map((d) => [d.productId!, d]));
+    const created: string[] = [];
+    const retired: string[] = [];
+
+    for (const row of stockByProduct) {
+      const total = row._sum.quantity ?? 0;
+      const existing = autoByProduct.get(row.productId);
+      const overstocked = total >= OVERSTOCK_UNITS;
+
+      if (overstocked && !(existing && existing.active)) {
+        // Reactivate a dormant auto-discount, or create a fresh one.
+        if (existing) {
+          await prisma.discount.update({
+            where: { id: existing.id },
+            data: { active: true, percentage: CLEARANCE_PERCENT },
+          });
+        } else {
+          await prisma.discount.create({
+            data: {
+              percentage: CLEARANCE_PERCENT,
+              productId: row.productId,
+              auto: true,
+            },
+          });
+        }
+        created.push(row.productId);
+      } else if (!overstocked && existing && existing.active) {
+        // Stock back to normal → retire the clearance discount.
+        await prisma.discount.update({
+          where: { id: existing.id },
+          data: { active: false },
+        });
+        retired.push(row.productId);
+      }
+    }
+
+    await AuditService.log({
+      userId,
+      action: 'AUTO_PRICING_RUN',
+      entity: 'Discount',
+      entityId: 'auto',
+      newValue: JSON.stringify({
+        created: created.length,
+        retired: retired.length,
+        thresholdUnits: OVERSTOCK_UNITS,
+        clearancePercent: CLEARANCE_PERCENT,
+      }),
+    });
+
+    return {
+      evaluated: stockByProduct.length,
+      created: created.length,
+      retired: retired.length,
+      thresholdUnits: OVERSTOCK_UNITS,
+      clearancePercent: CLEARANCE_PERCENT,
+    };
+  },
 };

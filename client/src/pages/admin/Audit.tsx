@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { ScrollText } from "lucide-react";
+import { ScrollText, Download } from "lucide-react";
 import { auditApi } from "../../services/api";
 import { PageHeader } from "../../components/ui/PageHeader";
+import { Button } from "../../components/ui/Button";
 import { Badge } from "../../components/ui/Badge";
 import { DataTable, type Column } from "../../components/ui/DataTable";
 import { formatDateTime } from "../../utils/format";
@@ -77,11 +78,41 @@ export default function Audit() {
     queryFn: auditApi.list,
   });
 
+  const exportToCSV = () => {
+    if (!entries || entries.length === 0) return;
+    const headers = ["Action", "Entity", "Entity ID", "Change", "User", "Timestamp"];
+    const rows = entries.map((e) => [
+      e.action,
+      e.entity,
+      e.entityId,
+      e.oldValue && e.newValue ? `${e.oldValue} -> ${e.newValue}` : e.newValue || "",
+      e.user ? `${e.user.firstName} ${e.user.lastName}` : "System",
+      e.timestamp ? new Date(e.timestamp).toISOString() : "",
+    ]);
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) => row.map((cell) => `"${cell}"`).join(",")),
+    ].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `audit_export_${new Date().toISOString().split("T")[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div>
       <PageHeader
         title="Audit Trail"
         subtitle="Every database change tracked automatically — products, orders, users, inventory, discounts, and more."
+        action={
+          <Button variant="ghost" onClick={exportToCSV}>
+            <Download size={16} /> Export CSV
+          </Button>
+        }
       />
       <DataTable
         data={entries ?? []}

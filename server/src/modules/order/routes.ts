@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { OrderController } from "./controller";
+import { InvoiceService } from "./invoice";
 import { authenticate, authorize } from "../../middleware/auth";
 import {
   validate,
@@ -34,5 +35,20 @@ router.patch(
   validate(updateOrderStatusSchema),
   OrderController.updateStatus,
 );
+
+// Download a PDF invoice for a specific order.
+// Available to the order's owner and all staff.
+router.get("/:id/invoice", async (req, res, next) => {
+  try {
+    const user = req.user!;
+    const stream = await InvoiceService.generate(req.params.id, user.id, user.role);
+    const shortId = req.params.id.slice(0, 8).toUpperCase();
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="invoice-${shortId}.pdf"`);
+    stream.pipe(res);
+  } catch (err) {
+    next(err);
+  }
+});
 
 export default router;

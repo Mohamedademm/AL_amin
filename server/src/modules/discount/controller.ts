@@ -43,4 +43,14 @@ export const DiscountController = {
       next(error);
     }
   },
+
+  // POST /api/discounts/auto-pricing — run the overstock-liquidation engine.
+  async runAutoPricing(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const summary = await DiscountService.runAutoPricing(req.user!.id);
+      res.json({ status: 'success', data: summary });
+    } catch (error) {
+      next(error);
+    }
+  },
 };

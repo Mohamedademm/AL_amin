@@ -16,6 +16,7 @@ import { StatCard } from "../../components/ui/StatCard";
 import { StatusBadge } from "../../components/ui/Badge";
 import { DashboardTrends } from "../../components/dashboard/DashboardTrends";
 import { SmartRestock } from "../../components/dashboard/SmartRestock";
+import { SpotsMap } from "../../components/dashboard/SpotsMap";
 import { PageLoader } from "../../components/ui/Spinner";
 import { formatPrice, formatDate } from "../../utils/format";
 import type { OrderStatus } from "../../types";
@@ -145,6 +146,10 @@ export default function AdminDashboard() {
       <DashboardTrends />
 
       <SmartRestock />
+
+      <div className="mt-6">
+        <SpotsMap />
+      </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-5">
         <div className="rounded-2xl border border-line bg-surface p-6 lg:col-span-2">

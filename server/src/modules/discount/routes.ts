@@ -14,6 +14,7 @@ router.use(authenticate);
 router.use(authorize(["ADMIN", "MANAGER"]));
 
 router.get("/", DiscountController.list);
+router.post("/auto-pricing", DiscountController.runAutoPricing);
 router.post("/", validate(createDiscountSchema), DiscountController.create);
 router.patch(
   "/:id",

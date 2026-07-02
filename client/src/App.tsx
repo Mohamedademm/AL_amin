@@ -22,6 +22,7 @@ const Cart = lazy(() => import("./pages/public/Cart"));
 const Checkout = lazy(() => import("./pages/public/Checkout"));
 const ClientOrders = lazy(() => import("./pages/public/ClientOrders"));
 const OrderDetail = lazy(() => import("./pages/public/OrderDetail"));
+import { ReloadPrompt } from "./components/pwa/ReloadPrompt";
 const Profile = lazy(() => import("./pages/public/Profile"));
 const Login = lazy(() => import("./pages/auth/Login"));
 const Register = lazy(() => import("./pages/auth/Register"));
@@ -43,6 +44,7 @@ const StaffManagement = lazy(() => import("./pages/admin/StaffManagement"));
 const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
 const Pricing = lazy(() => import("./pages/admin/Pricing"));
 const Audit = lazy(() => import("./pages/admin/Audit"));
+const SmartRestock = lazy(() => import("./pages/admin/SmartRestock"));
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false, retry: 1 } },
@@ -61,6 +63,7 @@ export default function App() {
             <CartProvider>
               <ConfirmProvider>
                 <BrowserRouter>
+                  <ReloadPrompt />
                   <Suspense fallback={<PageLoader />}>
                     <Routes>
                       {/* Public storefront */}
@@ -177,6 +180,7 @@ export default function App() {
                           element={<StaffManagement />}
                         />
                         <Route path="/admin/pricing" element={<Pricing />} />
+                        <Route path="/admin/smart-restock" element={<SmartRestock />} />
                         <Route path="/admin/audit" element={<Audit />} />
                         <Route
                           path="/admin/settings"

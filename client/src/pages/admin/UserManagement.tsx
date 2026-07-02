@@ -15,6 +15,7 @@ import {
   Mail,
   Lock,
   Phone,
+  Download,
 } from "lucide-react";
 import { userApi } from "../../services/api";
 import { PageHeader } from "../../components/ui/PageHeader";
@@ -185,6 +186,38 @@ export default function UserManagement() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const pageItems = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
+  // Export clients to CSV
+  const exportToCSV = () => {
+    if (!filtered || filtered.length === 0) {
+      toast.error("No users to export");
+      return;
+    }
+    const headers = ["ID", "First Name", "Last Name", "Email", "Phone", "Role", "Status", "Joined"];
+    const rows = filtered.map((u) => [
+      u.id,
+      u.firstName,
+      u.lastName,
+      u.email,
+      u.phone || "",
+      u.role,
+      u.status,
+      u.createdAt ? new Date(u.createdAt).toISOString() : "",
+    ]);
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) => row.map((cell) => `"${cell}"`).join(",")),
+    ].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `users_export_${new Date().toISOString().split("T")[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Export downloaded");
+  };
+
   if (isLoading) return <PageLoader label="Loading users" />;
 
   return (
@@ -193,9 +226,14 @@ export default function UserManagement() {
         title="User Directory"
         subtitle="Create, manage and audit every account on the platform."
         action={
-          <Button onClick={openCreate}>
-            <UserPlus size={16} /> Add user
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" onClick={exportToCSV}>
+              <Download size={16} /> Export CSV
+            </Button>
+            <Button onClick={openCreate}>
+              <UserPlus size={16} /> Add user
+            </Button>
+          </div>
         }
       />
 
@@ -286,7 +324,8 @@ export default function UserManagement() {
                             },
                           })
                         }
-                        title="Toggle status"
+                        title="Toggle status (Click to change)"
+                        className="transition-transform hover:scale-105 active:scale-95"
                       >
                         <Badge tone={u.status === "ACTIVE" ? "success" : "red"}>
                           <span
